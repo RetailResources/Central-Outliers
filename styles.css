@@ -143,6 +143,16 @@ select {
   display: inline-table;
 }
 
+.data-table th,
+.data-table td {
+  white-space: nowrap;
+}
+
+.data-table th:first-child,
+.data-table td:first-child {
+  max-width: 180px;
+}
+
 .data-table thead th {
   background: #1f6b88;
   color: #fff;
