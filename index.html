@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Central Outliers</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Central</p>
+          <h1>Outliers</h1>
+          <p class="subtle">Select a metric and compare the bottom or top 20 stores.</p>
+        </div>
+
+        <div class="controls">
+          <div class="control">
+            <label for="metricSelect">Metric</label>
+            <select id="metricSelect"></select>
+          </div>
+
+          <div class="control">
+            <label for="modeSelect">View</label>
+            <select id="modeSelect">
+              <option value="lowest">Bottom 20</option>
+              <option value="highest">Top 20</option>
+            </select>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <section id="statusBar" class="status-bar">
+          Loading workbook data from <code>sales-dashboard.xlsx</code>...
+        </section>
+
+        <section id="metricsHost" class="metrics-host"></section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
