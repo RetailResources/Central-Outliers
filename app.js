@@ -6,45 +6,55 @@ const METRIC_GROUPS = [
   {
     label: "GP Per Labor Hour",
     valueCandidates: ["GP Per Labor Hour %Tgt", "GP Per Labor Hour % Tgt", "GP/LH %Tgt", "GPH %Tgt"],
+    rankCandidates: ["GP Per Labor Hour Rank", "GP/LH Rank", "GPH Rank"],
   },
   {
     label: "PP Act",
     valueCandidates: ["PP Act %Tgt", "PP Act % Tgt", "PP Activity %Tgt"],
+    rankCandidates: ["PP Act Attain Rank", "PP Act Rank", "PP Activity Rank"],
   },
   {
     label: "ReBiz Conv",
     valueCandidates: ["ReBiz Conv %Tgt", "ReBiz Conv % Tgt", "ReBiz %Tgt"],
+    rankCandidates: ["ReBiz Conv Rank", "ReBiz Rank", "Reservation Conversion Rank"],
   },
   {
     label: "Acc GP Pct",
     valueCandidates: ["Acc GP Pct Actual", "Acc GP Pct", "Acc GP Actual"],
+    rankCandidates: ["Acc GP Pct Rank", "Acc GP Rank", "Adjusted GP Rank"],
   },
   {
     label: "CSAT",
     valueCandidates: ["CSAT Actual", "CSAT", "Customer Satisfaction Actual"],
+    rankCandidates: ["CSAT Rank", "Customer Satisfaction Rank"],
   },
   {
     label: "Visa Priority",
     valueCandidates: ["Visa Priority Rate %Tg", "Visa Priority Rate %Tgt", "Visa Priority Rate", "Visa %Tgt"],
+    rankCandidates: ["Visa Priority Rate Rank", "Visa Rank", "Priority Visa Rank"],
   },
   {
     label: "P360 Attach",
     valueCandidates: ["P360 Attach Rate %Tgt", "P360 Attach Rate % Tgt", "P360 Attach %Tgt"],
+    rankCandidates: ["P360 Attach Rate Rank", "P360 Rank", "Premium Attach Rank"],
   },
   {
     label: "Premium Mix",
     valueCandidates: ["Premium Mix Rate %Tgt", "Premium Mix Rate % Tgt", "Premium %Tgt"],
+    rankCandidates: ["Premium Rate Plan Rank", "Premium Mix Rank", "Premium Rank"],
   },
 ];
 
 const state = {
   workbook: null,
   stores: [],
+  selectedMetric: null,
 };
 
 const el = {
   statusBar: document.getElementById("statusBar"),
   metricsHost: document.getElementById("metricsHost"),
+  metricSelect: document.getElementById("metricSelect"),
   modeSelect: document.getElementById("modeSelect"),
 };
 
@@ -83,6 +93,18 @@ function formatMetricValue(value, isCsat) {
 
 function normalizeKey(key) {
   return String(key || "").replace(/\s+/g, " ").trim();
+}
+
+function sheetToObjects(sheet) {
+  if (!sheet) return [];
+  const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+  return rows.map((row) => {
+    const normalized = {};
+    Object.entries(row).forEach(([key, value]) => {
+      normalized[normalizeKey(key)] = typeof value === "string" ? normalizeText(value) : value;
+    });
+    return normalized;
+  });
 }
 
 function getSheetWithFallback(workbook, candidates) {
@@ -225,12 +247,20 @@ function renderMetricTable(metricGroup) {
   return card;
 }
 
-function renderAllMetrics() {
+function renderSelectedMetric() {
+  const selected = METRIC_GROUPS.find((group) => group.label === el.metricSelect.value) || METRIC_GROUPS[0];
+  if (!selected) return;
+
   el.metricsHost.innerHTML = "";
-  METRIC_GROUPS.forEach((metricGroup) => {
-    const card = renderMetricTable(metricGroup);
-    el.metricsHost.appendChild(card);
-  });
+  el.metricsHost.appendChild(renderMetricTable(selected));
+}
+
+function populateMetricSelect() {
+  el.metricSelect.innerHTML = METRIC_GROUPS.map(
+    (group) => `<option value="${escapeHtml(group.label)}">${escapeHtml(group.label)}</option>`
+  ).join("");
+  state.selectedMetric = METRIC_GROUPS[0]?.label || null;
+  el.metricSelect.value = state.selectedMetric || "";
 }
 
 async function loadWorkbook() {
@@ -243,20 +273,22 @@ async function loadWorkbook() {
     const storeSheet = getSheetWithFallback(state.workbook, ["Store Sheet", "Store", "Store Data"]);
     state.stores = parseStores(storeSheet);
 
-    renderAllMetrics();
+    populateMetricSelect();
+    renderSelectedMetric();
 
     el.statusBar.innerHTML = `Loaded <strong>${escapeHtml(WORKBOOK_URL)}</strong> successfully.`;
   } catch (err) {
     console.error(err);
     el.statusBar.innerHTML = `
       <strong>Unable to load workbook.</strong>
-      Please make sure <code>${escapeHtml(WORKBOOK_URL)}</code> exists in the repository root and is being served by the site.
+      Please make sure <code>${escapeHtml(WORKBOOK_URL)}</code> exists in the repository root.
       <br /><br />
       ${escapeHtml(err.message || String(err))}
     `;
   }
 }
 
-el.modeSelect.addEventListener("change", renderAllMetrics);
+el.metricSelect.addEventListener("change", renderSelectedMetric);
+el.modeSelect.addEventListener("change", renderSelectedMetric);
 
 loadWorkbook();
