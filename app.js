@@ -288,6 +288,10 @@ function renderSelectedMetric() {
   fitTableToViewport(card);
 }
 
+function rerenderCurrentMetric() {
+  renderSelectedMetric();
+}
+
 function populateMetricSelect() {
   el.metricSelect.innerHTML = METRIC_GROUPS.map(
     (group) => `<option value="${escapeHtml(group.label)}">${escapeHtml(group.label)}</option>`
@@ -324,5 +328,11 @@ async function loadWorkbook() {
 el.metricSelect.addEventListener("change", renderSelectedMetric);
 el.modeSelect.addEventListener("change", renderSelectedMetric);
 window.addEventListener("resize", renderSelectedMetric);
+
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(() => {
+    rerenderCurrentMetric();
+  });
+}
 
 loadWorkbook();
