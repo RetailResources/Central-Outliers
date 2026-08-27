@@ -48,13 +48,11 @@ const METRIC_GROUPS = [
 const state = {
   workbook: null,
   stores: [],
-  selectedMetric: null,
 };
 
 const el = {
   statusBar: document.getElementById("statusBar"),
   metricsHost: document.getElementById("metricsHost"),
-  metricSelect: document.getElementById("metricSelect"),
   modeSelect: document.getElementById("modeSelect"),
 };
 
@@ -278,26 +276,13 @@ function fitTableToViewport(card) {
   }
 }
 
-function renderSelectedMetric() {
-  const selected = METRIC_GROUPS.find((group) => group.label === el.metricSelect.value) || METRIC_GROUPS[0];
-  if (!selected) return;
-
+function renderAllMetrics() {
   el.metricsHost.innerHTML = "";
-  const card = renderMetricTable(selected);
-  el.metricsHost.appendChild(card);
-  fitTableToViewport(card);
-}
-
-function rerenderCurrentMetric() {
-  renderSelectedMetric();
-}
-
-function populateMetricSelect() {
-  el.metricSelect.innerHTML = METRIC_GROUPS.map(
-    (group) => `<option value="${escapeHtml(group.label)}">${escapeHtml(group.label)}</option>`
-  ).join("");
-  state.selectedMetric = METRIC_GROUPS[0]?.label || null;
-  el.metricSelect.value = state.selectedMetric || "";
+  METRIC_GROUPS.forEach((metricGroup) => {
+    const card = renderMetricTable(metricGroup);
+    el.metricsHost.appendChild(card);
+    fitTableToViewport(card);
+  });
 }
 
 async function loadWorkbook() {
@@ -310,8 +295,7 @@ async function loadWorkbook() {
     const storeSheet = getSheetWithFallback(state.workbook, ["Store Sheet", "Store", "Store Data"]);
     state.stores = parseStores(storeSheet);
 
-    populateMetricSelect();
-    renderSelectedMetric();
+    renderAllMetrics();
 
     el.statusBar.innerHTML = `Loaded <strong>${escapeHtml(WORKBOOK_URL)}</strong> successfully.`;
   } catch (err) {
@@ -325,13 +309,12 @@ async function loadWorkbook() {
   }
 }
 
-el.metricSelect.addEventListener("change", renderSelectedMetric);
-el.modeSelect.addEventListener("change", renderSelectedMetric);
-window.addEventListener("resize", renderSelectedMetric);
+el.modeSelect.addEventListener("change", renderAllMetrics);
+window.addEventListener("resize", renderAllMetrics);
 
 if (document.fonts && document.fonts.ready) {
   document.fonts.ready.then(() => {
-    rerenderCurrentMetric();
+    renderAllMetrics();
   });
 }
 
