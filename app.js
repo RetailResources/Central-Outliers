@@ -225,43 +225,11 @@ function renderMetricTable(metricGroup) {
   return card;
 }
 
-function fitTableToViewport(card) {
-  if (window.innerWidth > 600) return;
-
-  const table = card.querySelector(".data-table");
-  if (!table) return;
-
-  const tableWrap = card.querySelector(".table-wrap");
-  if (!tableWrap) return;
-
-  let fontSize = 9;
-  let paddingX = 1;
-
-  const applySizing = () => {
-    table.querySelectorAll("th, td").forEach((cell) => {
-      cell.style.fontSize = `${fontSize}px`;
-      cell.style.padding = `2px ${paddingX}px`;
-    });
-  };
-
-  applySizing();
-
-  const containerWidth = tableWrap.clientWidth;
-  let attempts = 0;
-  while (table.scrollWidth > containerWidth && attempts < 12 && fontSize > 5) {
-    fontSize -= 0.5;
-    if (paddingX > 0) paddingX -= 0.25;
-    applySizing();
-    attempts += 1;
-  }
-}
-
 function renderAllMetrics() {
   el.metricsHost.innerHTML = "";
   METRIC_GROUPS.forEach((metricGroup) => {
     const card = renderMetricTable(metricGroup);
     el.metricsHost.appendChild(card);
-    fitTableToViewport(card);
   });
 }
 
@@ -282,7 +250,7 @@ async function loadWorkbook() {
     console.error(err);
     el.statusBar.innerHTML = `
       <strong>Unable to load workbook.</strong>
-      Please make sure <code>${escapeHtml(WORKBOOK_URL)}</code> exists in the repository root.
+      Please make sure <code>${escapeHtml(WORKBOOK_URL)}</code> exists in the repository root and is being served by the site.
       <br /><br />
       ${escapeHtml(err.message || String(err))}
     `;
@@ -290,12 +258,5 @@ async function loadWorkbook() {
 }
 
 el.modeSelect.addEventListener("change", renderAllMetrics);
-window.addEventListener("resize", renderAllMetrics);
-
-if (document.fonts && document.fonts.ready) {
-  document.fonts.ready.then(() => {
-    renderAllMetrics();
-  });
-}
 
 loadWorkbook();
