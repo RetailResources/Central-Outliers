@@ -156,15 +156,17 @@ function renderMetricTable(metricGroup) {
 
   const rows = state.stores
     .map((row) => {
+      const districtName = normalizeText(getRowValue(row, ["District", "DISTRICT", "District Name"]));
       const storeName = normalizeText(row.__storeName);
       const metricValue = getRowValue(row, metricGroup.valueCandidates);
       return {
+        districtName,
         storeName,
         metricValue,
         sortValue: parseNumeric(metricValue),
       };
     })
-    .filter((row) => row.storeName && row.sortValue !== null)
+    .filter((row) => row.districtName && row.storeName && row.sortValue !== null)
     .sort((a, b) => {
       if (a.sortValue === b.sortValue) {
         return a.storeName.toLowerCase().localeCompare(b.storeName.toLowerCase());
@@ -192,6 +194,7 @@ function renderMetricTable(metricGroup) {
   table.innerHTML = `
     <thead>
       <tr>
+        <th>District</th>
         <th>Store Name</th>
         <th>${isCsat ? "CSAT Actual" : "Percent to Target"}</th>
       </tr>
@@ -201,6 +204,7 @@ function renderMetricTable(metricGroup) {
         .map(
           (row) => `
             <tr>
+              <td>${escapeHtml(row.districtName)}</td>
               <td>${escapeHtml(row.storeName)}</td>
               <td>${escapeHtml(formatMetricValue(row.metricValue, isCsat))}</td>
             </tr>
