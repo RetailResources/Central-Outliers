@@ -130,49 +130,40 @@ select {
 }
 
 .table-wrap {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  overflow: hidden;
 }
 
 .data-table {
   width: 100%;
   border-collapse: collapse;
   border-spacing: 0;
-  min-width: 420px;
-  table-layout: auto;
-  display: inline-table;
+  table-layout: fixed;
+  display: table;
 }
 
 .data-table th,
 .data-table td {
   white-space: nowrap;
-}
-
-.data-table th:first-child,
-.data-table td:first-child {
-  max-width: 180px;
+  overflow: hidden;
+  text-overflow: clip;
+  text-align: center;
 }
 
 .data-table thead th {
   background: #1f6b88;
   color: #fff;
   font-size: 12px;
-  text-align: center;
-  padding: 4px 8px;
+  padding: 6px 4px;
   border: 1px solid #000;
-  white-space: nowrap;
+  line-height: 1.1;
 }
 
 .data-table tbody td {
-  padding: 4px 8px;
+  padding: 6px 4px;
   border: 1px solid #000;
   font-size: 12px;
-  text-align: center;
-  white-space: nowrap;
-}
-
-.data-table tbody tr:hover td {
-  background: inherit;
+  line-height: 1.1;
 }
 
 .metric-cell {
@@ -204,6 +195,21 @@ select {
   color: #000;
 }
 
+.data-table th:nth-child(1),
+.data-table td:nth-child(1) {
+  width: 33%;
+}
+
+.data-table th:nth-child(2),
+.data-table td:nth-child(2) {
+  width: 37%;
+}
+
+.data-table th:nth-child(3),
+.data-table td:nth-child(3) {
+  width: 30%;
+}
+
 @media (max-width: 900px) {
   .topbar {
     flex-direction: column;
@@ -220,5 +226,31 @@ select {
 
   .app-shell {
     padding: 16px;
+  }
+
+  .metric-card {
+    padding: 12px;
+  }
+
+  .metric-card h2 {
+    font-size: 18px;
+  }
+
+  .metric-card .caption {
+    font-size: 12px;
+  }
+
+  .data-table thead th,
+  .data-table tbody td {
+    font-size: 10px;
+    padding: 4px 2px;
+  }
+}
+
+@media (max-width: 600px) {
+  .data-table thead th,
+  .data-table tbody td {
+    font-size: 9px;
+    padding: 3px 1px;
   }
 }
