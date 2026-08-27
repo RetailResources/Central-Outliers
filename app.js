@@ -247,12 +247,45 @@ function renderMetricTable(metricGroup) {
   return card;
 }
 
+function fitTableToViewport(card) {
+  if (window.innerWidth > 600) return;
+
+  const table = card.querySelector(".data-table");
+  if (!table) return;
+
+  const tableWrap = card.querySelector(".table-wrap");
+  if (!tableWrap) return;
+
+  let fontSize = 9;
+  let paddingX = 1;
+
+  const applySizing = () => {
+    table.querySelectorAll("th, td").forEach((cell) => {
+      cell.style.fontSize = `${fontSize}px`;
+      cell.style.padding = `2px ${paddingX}px`;
+    });
+  };
+
+  applySizing();
+
+  const containerWidth = tableWrap.clientWidth;
+  let attempts = 0;
+  while (table.scrollWidth > containerWidth && attempts < 12 && fontSize > 5) {
+    fontSize -= 0.5;
+    if (paddingX > 0) paddingX -= 0.25;
+    applySizing();
+    attempts += 1;
+  }
+}
+
 function renderSelectedMetric() {
   const selected = METRIC_GROUPS.find((group) => group.label === el.metricSelect.value) || METRIC_GROUPS[0];
   if (!selected) return;
 
   el.metricsHost.innerHTML = "";
-  el.metricsHost.appendChild(renderMetricTable(selected));
+  const card = renderMetricTable(selected);
+  el.metricsHost.appendChild(card);
+  fitTableToViewport(card);
 }
 
 function populateMetricSelect() {
@@ -290,5 +323,6 @@ async function loadWorkbook() {
 
 el.metricSelect.addEventListener("change", renderSelectedMetric);
 el.modeSelect.addEventListener("change", renderSelectedMetric);
+window.addEventListener("resize", renderSelectedMetric);
 
 loadWorkbook();
