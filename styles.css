@@ -14,6 +14,14 @@
 
 * {
   box-sizing: border-box;
+  min-width: 0;
+}
+
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -24,9 +32,11 @@ body {
 }
 
 .app-shell {
-  max-width: 1500px;
+  width: 100%;
+  max-width: 100vw;
   margin: 0 auto;
-  padding: 24px;
+  padding: 16px;
+  overflow-x: hidden;
 }
 
 .topbar {
@@ -40,6 +50,7 @@ body {
   border-radius: 18px;
   box-shadow: var(--shadow);
   margin-bottom: 18px;
+  max-width: 100%;
 }
 
 .eyebrow {
@@ -67,6 +78,7 @@ h1 {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  max-width: 100%;
 }
 
 .control {
@@ -92,6 +104,7 @@ select {
   background: #fff;
   color: var(--text);
   font-size: 14px;
+  max-width: 100%;
 }
 
 .status-bar {
@@ -102,12 +115,14 @@ select {
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
   color: var(--muted);
+  max-width: 100%;
 }
 
 .metrics-host {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  max-width: 100%;
 }
 
 .metric-card {
@@ -116,6 +131,8 @@ select {
   border-radius: 18px;
   box-shadow: var(--shadow);
   padding: 16px;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .metric-card h2 {
@@ -131,13 +148,14 @@ select {
 
 .table-wrap {
   width: 100%;
+  max-width: 100%;
   overflow: hidden;
 }
 
 .data-table {
   width: 100%;
+  max-width: 100%;
   border-collapse: collapse;
-  border-spacing: 0;
   table-layout: fixed;
   display: table;
 }
@@ -148,22 +166,24 @@ select {
   overflow: hidden;
   text-overflow: clip;
   text-align: center;
+  min-width: 0;
+  max-width: 0;
 }
 
 .data-table thead th {
   background: #1f6b88;
   color: #fff;
   font-size: 12px;
-  padding: 6px 4px;
+  padding: 4px 2px;
   border: 1px solid #000;
-  line-height: 1.1;
+  line-height: 1.05;
 }
 
 .data-table tbody td {
-  padding: 6px 4px;
+  padding: 4px 2px;
   border: 1px solid #000;
   font-size: 12px;
-  line-height: 1.1;
+  line-height: 1.05;
 }
 
 .metric-cell {
@@ -213,6 +233,7 @@ select {
 @media (max-width: 900px) {
   .topbar {
     flex-direction: column;
+    padding: 18px;
   }
 
   .control {
@@ -225,11 +246,11 @@ select {
   }
 
   .app-shell {
-    padding: 16px;
+    padding: 12px;
   }
 
   .metric-card {
-    padding: 12px;
+    padding: 10px;
   }
 
   .metric-card h2 {
@@ -242,15 +263,23 @@ select {
 
   .data-table thead th,
   .data-table tbody td {
-    font-size: 10px;
-    padding: 4px 2px;
+    font-size: 9px;
+    padding: 3px 1px;
   }
 }
 
 @media (max-width: 600px) {
   .data-table thead th,
   .data-table tbody td {
-    font-size: 9px;
-    padding: 3px 1px;
+    font-size: 8px;
+    padding: 2px 1px;
+  }
+
+  .metric-card h2 {
+    font-size: 16px;
+  }
+
+  .metric-card .caption {
+    font-size: 11px;
   }
 }
