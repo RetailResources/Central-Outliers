@@ -138,13 +138,37 @@ function getRowValue(row, candidates) {
   return col ? row[col] : "";
 }
 
-function parseStores(rows) {
-  return rows.map((row) => {
-    const storeName =
-      getRowValue(row, ["Sap: Loaction", "Sap: Location", "STORE NAME", "Store Name", "STORE CODE", "SAP"]) || "";
+function parseStores(sheet) {
+  if (!sheet) return [];
+
+  const rows = XLSX.utils.sheet_to_json(sheet, { defval: "", header: 1 });
+  if (!rows.length) return [];
+
+  const headerRow = rows[0].map((cell) => normalizeText(cell));
+  const storeRows = rows.slice(1);
+
+  return storeRows.map((row) => {
+    const obj = {};
+    headerRow.forEach((header, index) => {
+      if (header) {
+        obj[header] = row[index] ?? "";
+      }
+    });
+
+    const districtName = normalizeText(row[0]);
+    const storeName = normalizeText(
+      obj["Sap: Loaction"] ||
+        obj["Sap: Location"] ||
+        obj["STORE NAME"] ||
+        obj["Store Name"] ||
+        obj["STORE CODE"] ||
+        obj["SAP"]
+    );
+
     return {
-      ...row,
-      __storeName: normalizeText(storeName),
+      ...obj,
+      __districtName: districtName,
+      __storeName: storeName,
     };
   });
 }
@@ -156,17 +180,18 @@ function renderMetricTable(metricGroup) {
 
   const rows = state.stores
     .map((row) => {
-      const districtName = normalizeText(getRowValue(row, ["District", "DISTRICT", "District Name"]));
+      const districtName = normalizeText(row.__districtName);
       const storeName = normalizeText(row.__storeName);
       const metricValue = getRowValue(row, metricGroup.valueCandidates);
+
       return {
-        districtName,
+        districtName: districtName || "N/A",
         storeName,
         metricValue,
         sortValue: parseNumeric(metricValue),
       };
     })
-    .filter((row) => row.districtName && row.storeName && row.sortValue !== null)
+    .filter((row) => row.storeName && row.sortValue !== null)
     .sort((a, b) => {
       if (a.sortValue === b.sortValue) {
         return a.storeName.toLowerCase().localeCompare(b.storeName.toLowerCase());
@@ -246,8 +271,7 @@ async function loadWorkbook() {
     state.workbook = XLSX.read(buffer, { type: "array" });
 
     const storeSheet = getSheetWithFallback(state.workbook, ["Store Sheet", "Store", "Store Data"]);
-    const storeRows = sheetToObjects(storeSheet);
-    state.stores = parseStores(storeRows);
+    state.stores = parseStores(storeSheet);
 
     populateMetricSelect();
     renderSelectedMetric();
