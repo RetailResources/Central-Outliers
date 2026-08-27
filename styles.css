@@ -1,0 +1,214 @@
+:root {
+  --bg: #f4f7fb;
+  --card: #ffffff;
+  --text: #172033;
+  --muted: #667085;
+  --border: #d7deea;
+  --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --primary: #0f62fe;
+  --primary-dark: #0b4fc2;
+  --secondary: #e8eef8;
+  --secondary-text: #16325c;
+  --white: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: linear-gradient(180deg, #eef3fb 0%, var(--bg) 100%);
+  color: var(--text);
+}
+
+.app-shell {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  margin-bottom: 18px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+h1 {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.1;
+}
+
+.subtle {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 220px;
+}
+
+.control label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+select {
+  appearance: none;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #fff;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.status-bar {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  color: var(--muted);
+}
+
+.metrics-host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.metric-card {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+.metric-card h2 {
+  margin: 0 0 10px;
+  font-size: 20px;
+}
+
+.metric-card .caption {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  min-width: 420px;
+  table-layout: auto;
+  display: inline-table;
+}
+
+.data-table thead th {
+  background: #1f6b88;
+  color: #fff;
+  font-size: 12px;
+  text-align: center;
+  padding: 4px 8px;
+  border: 1px solid #000;
+  white-space: nowrap;
+}
+
+.data-table tbody td {
+  padding: 4px 8px;
+  border: 1px solid #000;
+  font-size: 12px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.data-table tbody tr:hover td {
+  background: inherit;
+}
+
+.metric-cell {
+  font-weight: 700;
+}
+
+.q1 {
+  background: #00b050;
+  color: #000;
+}
+
+.q2 {
+  background: #92d050;
+  color: #000;
+}
+
+.q3 {
+  background: #ffff00;
+  color: #000;
+}
+
+.q4 {
+  background: #ffc000;
+  color: #000;
+}
+
+.q5 {
+  background: #ff0000;
+  color: #000;
+}
+
+@media (max-width: 900px) {
+  .topbar {
+    flex-direction: column;
+  }
+
+  .control {
+    min-width: 0;
+    width: 100%;
+  }
+
+  h1 {
+    font-size: 28px;
+  }
+
+  .app-shell {
+    padding: 16px;
+  }
+}
