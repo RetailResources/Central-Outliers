@@ -1,6 +1,6 @@
 /* global XLSX */
 
-const WORKBOOK_URL = "sales-dashboard.xlsx";
+const WORKBOOK_URL = "cslb-stores.xlsx";
 
 const METRIC_GROUPS = [
   {
