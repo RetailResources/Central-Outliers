@@ -11,7 +11,7 @@ const METRIC_GROUPS = [
   {
     label: "PP Act %Tgt",
     columnLetter: "O",
-    valueType: "percentRaw",
+    valueType: "percent",
   },
   {
     label: "Rebiz Conv",
@@ -84,8 +84,9 @@ function formatMetricValue(value, valueType) {
   if (numeric === null) return "";
   if (valueType === "currency") return `$${numeric.toFixed(2)}`;
   if (valueType === "number") return numeric.toFixed(2);
+  if (valueType === "percent") return `${(numeric * 100).toFixed(2)}%`;
   if (valueType === "percentRaw") return `${numeric.toFixed(2)}%`;
-  return `${(numeric * 100).toFixed(2)}%`;
+  return String(value);
 }
 
 function getSheetWithFallback(workbook, candidates) {
@@ -113,6 +114,35 @@ function columnLetterToIndex(letter) {
 function getRowValueByColumnLetter(row, columnLetter) {
   const index = columnLetterToIndex(columnLetter);
   return row?.[index] ?? "";
+}
+
+function formatExcelDate(cell) {
+  if (!cell) return "";
+
+  if (cell.w) return normalizeText(cell.w);
+
+  const value = cell.v ?? cell;
+
+  if (value instanceof Date) {
+    return value.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+  }
+
+  if (typeof value === "number") {
+    const parsed = XLSX.SSF.parse_date_code(value);
+    if (!parsed) return "";
+    const date = new Date(parsed.y, parsed.m - 1, parsed.d);
+    return date.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+  }
+
+  return normalizeText(value);
 }
 
 function parseStores(sheet) {
@@ -227,7 +257,7 @@ async function loadWorkbook() {
     state.stores = parseStores(storeSheet);
 
     const dateSheet = state.workbook.Sheets["Date"];
-    const dataThrough = normalizeText(dateSheet?.A1?.v ?? dateSheet?.A1 ?? "");
+    const dataThrough = formatExcelDate(dateSheet?.A1);
 
     renderAllMetrics();
 
