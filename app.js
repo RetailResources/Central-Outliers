@@ -122,13 +122,8 @@ function parseStores(sheet) {
   const storeRows = rows.slice(1);
 
   return storeRows.map((row) => {
-    const districtName = normalizeText(row[0]);
-    const storeName = normalizeText(
-      row[1] ||
-        row[2] ||
-        row[3] ||
-        row[0]
-    );
+    const districtName = normalizeText(row[0]); // Column A
+    const storeName = normalizeText(row[3]); // Column D
 
     return {
       __districtName: districtName,
