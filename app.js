@@ -226,9 +226,14 @@ async function loadWorkbook() {
     const storeSheet = getSheetWithFallback(state.workbook, ["Store Sheet", "Store", "Store Data"]);
     state.stores = parseStores(storeSheet);
 
+    const dateSheet = state.workbook.Sheets["Date"];
+    const dataThrough = normalizeText(dateSheet?.A1?.v ?? dateSheet?.A1 ?? "");
+
     renderAllMetrics();
 
-    el.statusBar.innerHTML = `Loaded <strong>${escapeHtml(WORKBOOK_URL)}</strong> successfully.`;
+    el.statusBar.innerHTML = dataThrough
+      ? `<strong>Data Through:</strong> ${escapeHtml(dataThrough)}`
+      : `<strong>Data Through:</strong> <em>Not found</em>`;
   } catch (err) {
     console.error(err);
     el.statusBar.innerHTML = `
