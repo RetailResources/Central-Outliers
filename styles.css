@@ -176,7 +176,10 @@ select {
   font-size: 12px;
   padding: 4px 2px;
   border: 1px solid #000;
-  line-height: 1.05;
+  line-height: 1.1;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .data-table tbody td {

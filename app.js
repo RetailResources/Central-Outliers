@@ -5,49 +5,49 @@ const WORKBOOK_URL = "cslb-stores.xlsx";
 const METRIC_GROUPS = [
   {
     label: "GP Per Labor Hour Actual",
-    valueCandidates: ["GP Per Labor Hour Actual"],
+    sourceColumn: "GP Per Labor Hour Actual",
     valueType: "currency",
     columnHeader: "GP Per Labor Hour Actual",
   },
   {
     label: "PP Act %Tgt",
-    valueCandidates: ["PP Act %Tgt"],
+    sourceColumn: "PP Act %Tgt",
     valueType: "percent",
     columnHeader: "PP Act %Tgt",
   },
   {
     label: "Rebiz Conv",
-    valueCandidates: ["Rebiz Conv"],
+    sourceColumn: "Rebiz Conv",
     valueType: "percent",
     columnHeader: "Rebiz Conv",
   },
   {
     label: "Acc GP Pct Actual",
-    valueCandidates: ["Acc GP Pct Actual"],
+    sourceColumn: "Acc GP Pct Actual",
     valueType: "percent",
     columnHeader: "Acc GP Pct Actual",
   },
   {
     label: "CSAT Actual",
-    valueCandidates: ["CSAT Actual"],
+    sourceColumn: "CSAT Actual",
     valueType: "number",
     columnHeader: "CSAT Actual",
   },
   {
     label: "Visa Priority Rate",
-    valueCandidates: ["Visa Priority Rate"],
+    sourceColumn: "Visa Priority Rate",
     valueType: "percent",
     columnHeader: "Visa Priority Rate",
   },
   {
     label: "Indexed P360 Attach Rate",
-    valueCandidates: ["Indexed P360 Attach Rate"],
+    sourceColumn: "Indexed P360 Attach Rate",
     valueType: "percent",
     columnHeader: "Indexed P360 Attach Rate",
   },
   {
     label: "Premium Mix Rate",
-    valueCandidates: ["Premium Mix Rate"],
+    sourceColumn: "Premium Mix Rate",
     valueType: "percent",
     columnHeader: "Premium Mix Rate",
   },
@@ -111,21 +111,13 @@ function getSheetWithFallback(workbook, candidates) {
   return null;
 }
 
-function findColumn(row, candidates) {
+function findColumn(row, columnName) {
   const keys = Object.keys(row || {});
-  for (const candidate of candidates) {
-    const exact = keys.find((k) => normalizeLookup(k) === normalizeLookup(candidate));
-    if (exact) return exact;
-  }
-  for (const candidate of candidates) {
-    const fuzzy = keys.find((k) => normalizeLookup(k).includes(normalizeLookup(candidate)));
-    if (fuzzy) return fuzzy;
-  }
-  return "";
+  return keys.find((k) => normalizeLookup(k) === normalizeLookup(columnName)) || "";
 }
 
-function getRowValue(row, candidates) {
-  const col = findColumn(row, candidates);
+function getRowValue(row, columnName) {
+  const col = findColumn(row, columnName);
   return col ? row[col] : "";
 }
 
@@ -172,7 +164,7 @@ function renderMetricTable(metricGroup) {
     .map((row) => {
       const districtName = normalizeText(row.__districtName);
       const storeName = normalizeText(row.__storeName);
-      const metricValue = getRowValue(row, metricGroup.valueCandidates);
+      const metricValue = getRowValue(row, metricGroup.sourceColumn);
 
       return {
         districtName: districtName || "N/A",
