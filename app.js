@@ -10,7 +10,7 @@ const METRIC_GROUPS = [
   },
   {
     label: "PP Act %Tgt",
-    columnLetter: "N",
+    columnLetter: "O",
     valueType: "percentRaw",
   },
   {
