@@ -11,7 +11,7 @@ const METRIC_GROUPS = [
   {
     label: "PP Act %Tgt",
     columnLetter: "N",
-    valueType: "percent",
+    valueType: "percentRaw",
   },
   {
     label: "Rebiz Conv",
@@ -83,7 +83,9 @@ function formatMetricValue(value, valueType) {
   const numeric = parseNumeric(value);
   if (numeric === null) return "";
   if (valueType === "currency") return `$${numeric.toFixed(2)}`;
-  return valueType === "number" ? numeric.toFixed(2) : `${(numeric * 100).toFixed(2)}%`;
+  if (valueType === "number") return numeric.toFixed(2);
+  if (valueType === "percentRaw") return `${numeric.toFixed(2)}%`;
+  return `${(numeric * 100).toFixed(2)}%`;
 }
 
 function getSheetWithFallback(workbook, candidates) {
