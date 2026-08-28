@@ -5,51 +5,43 @@ const WORKBOOK_URL = "cslb-stores.xlsx";
 const METRIC_GROUPS = [
   {
     label: "GP Per Labor Hour Actual",
-    valueCandidates: ["GP Per Labor Hour Actual"],
+    columnLetter: "I",
     valueType: "currency",
-    columnHeader: "GP Per Labor Hour Actual",
   },
   {
     label: "PP Act %Tgt",
-    valueCandidates: ["PP Act %Tgt"],
+    columnLetter: "N",
     valueType: "percent",
-    columnHeader: "PP Act %Tgt",
   },
   {
     label: "Rebiz Conv",
-    valueCandidates: ["Rebiz Conv"],
+    columnLetter: "S",
     valueType: "percent",
-    columnHeader: "Rebiz Conv",
   },
   {
     label: "Acc GP Pct Actual",
-    valueCandidates: ["Acc GP Pct Actual"],
+    columnLetter: "W",
     valueType: "percent",
-    columnHeader: "Acc GP Pct Actual",
   },
   {
     label: "CSAT Actual",
-    valueCandidates: ["CSAT Actual"],
+    columnLetter: "Y",
     valueType: "number",
-    columnHeader: "CSAT Actual",
   },
   {
     label: "Visa Priority Rate",
-    valueCandidates: ["Visa Priority Rate"],
+    columnLetter: "AC",
     valueType: "percent",
-    columnHeader: "Visa Priority Rate",
   },
   {
     label: "Indexed P360 Attach Rate",
-    valueCandidates: ["Indexed P360 Attach Rate"],
+    columnLetter: "AG",
     valueType: "percent",
-    columnHeader: "Indexed P360 Attach Rate",
   },
   {
     label: "Premium Mix Rate",
-    valueCandidates: ["Premium Mix Rate"],
+    columnLetter: "AM",
     valueType: "percent",
-    columnHeader: "Premium Mix Rate",
   },
 ];
 
@@ -77,10 +69,6 @@ function normalizeText(value) {
   return String(value ?? "").trim().replace(/\s+/g, " ");
 }
 
-function normalizeLookup(value) {
-  return normalizeText(value).toLowerCase();
-}
-
 function parseNumeric(value) {
   if (value === null || value === undefined || value === "") return null;
   if (typeof value === "number") return value;
@@ -101,28 +89,28 @@ function formatMetricValue(value, valueType) {
 function getSheetWithFallback(workbook, candidates) {
   const names = workbook?.SheetNames || [];
   for (const candidate of candidates) {
-    const exact = names.find((name) => normalizeLookup(name) === normalizeLookup(candidate));
+    const exact = names.find((name) => normalizeText(name).toLowerCase() === normalizeText(candidate).toLowerCase());
     if (exact) return workbook.Sheets[exact];
   }
   for (const candidate of candidates) {
-    const found = names.find((name) => normalizeLookup(name).includes(normalizeLookup(candidate)));
+    const found = names.find((name) => normalizeText(name).toLowerCase().includes(normalizeText(candidate).toLowerCase()));
     if (found) return workbook.Sheets[found];
   }
   return null;
 }
 
-function findColumn(row, candidates) {
-  const keys = Object.keys(row || {});
-  for (const candidate of candidates) {
-    const exact = keys.find((k) => normalizeLookup(k) === normalizeLookup(candidate));
-    if (exact) return exact;
+function columnLetterToIndex(letter) {
+  let result = 0;
+  const clean = String(letter || "").toUpperCase();
+  for (let i = 0; i < clean.length; i++) {
+    result = result * 26 + (clean.charCodeAt(i) - 64);
   }
-  return "";
+  return result - 1;
 }
 
-function getRowValue(row, candidates) {
-  const col = findColumn(row, candidates);
-  return col ? row[col] : "";
+function getRowValueByColumnLetter(row, columnLetter) {
+  const index = columnLetterToIndex(columnLetter);
+  return row?.[index] ?? "";
 }
 
 function parseStores(sheet) {
@@ -131,31 +119,21 @@ function parseStores(sheet) {
   const rows = XLSX.utils.sheet_to_json(sheet, { defval: "", header: 1 });
   if (!rows.length) return [];
 
-  const headerRow = rows[0].map((cell) => normalizeText(cell));
   const storeRows = rows.slice(1);
 
   return storeRows.map((row) => {
-    const obj = {};
-    headerRow.forEach((header, index) => {
-      if (header) {
-        obj[header] = row[index] ?? "";
-      }
-    });
-
     const districtName = normalizeText(row[0]);
     const storeName = normalizeText(
-      obj["Sap: Loaction"] ||
-        obj["Sap: Location"] ||
-        obj["STORE NAME"] ||
-        obj["Store Name"] ||
-        obj["STORE CODE"] ||
-        obj["SAP"]
+      row[1] ||
+        row[2] ||
+        row[3] ||
+        row[0]
     );
 
     return {
-      ...obj,
       __districtName: districtName,
       __storeName: storeName,
+      __rawRow: row,
     };
   });
 }
@@ -168,7 +146,7 @@ function renderMetricTable(metricGroup) {
     .map((row) => {
       const districtName = normalizeText(row.__districtName);
       const storeName = normalizeText(row.__storeName);
-      const metricValue = getRowValue(row, metricGroup.valueCandidates);
+      const metricValue = getRowValueByColumnLetter(row.__rawRow, metricGroup.columnLetter);
 
       return {
         districtName: districtName || "N/A",
@@ -207,7 +185,7 @@ function renderMetricTable(metricGroup) {
       <tr>
         <th>District</th>
         <th>Store Name</th>
-        <th>${escapeHtml(metricGroup.columnHeader)}</th>
+        <th>${escapeHtml(metricGroup.label)}</th>
       </tr>
     </thead>
     <tbody>
