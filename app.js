@@ -5,42 +5,42 @@ const WORKBOOK_URL = "cslb-stores.xlsx";
 const METRIC_GROUPS = [
   {
     label: "GP Per Labor Hour Actual",
-    valueCandidates: ["GP Per Labor Hour Actual", "GP Per Labor Hour", "GPH Actual"],
+    valueCandidates: ["GP Per Labor Hour Actual"],
     valueType: "currency",
   },
   {
     label: "PP Act %Tgt",
-    valueCandidates: ["PP Act %Tgt", "PP Act", "PP Activity %Tgt"],
+    valueCandidates: ["PP Act %Tgt"],
     valueType: "percent",
   },
   {
     label: "Rebiz Conv",
-    valueCandidates: ["Rebiz Conv", "ReBiz Conv %Tgt", "ReBiz Conv Actual"],
+    valueCandidates: ["Rebiz Conv"],
     valueType: "percent",
   },
   {
     label: "Acc GP Pct Actual",
-    valueCandidates: ["Acc GP Pct Actual", "Acc GP Pct", "Acc GP Actual"],
+    valueCandidates: ["Acc GP Pct Actual"],
     valueType: "percent",
   },
   {
     label: "CSAT Actual",
-    valueCandidates: ["CSAT Actual", "CSAT", "Customer Satisfaction Actual"],
+    valueCandidates: ["CSAT Actual"],
     valueType: "number",
   },
   {
     label: "Visa Priority Rate",
-    valueCandidates: ["Visa Priority Rate", "Visa Priority Rate %Tgt", "Visa Priority Rate Actual"],
+    valueCandidates: ["Visa Priority Rate"],
     valueType: "percent",
   },
   {
     label: "Indexed P360 Attach Rate",
-    valueCandidates: ["Indexed P360 Attach Rate", "P360 Attach Rate", "P360 Attach Rate %Tgt"],
+    valueCandidates: ["Indexed P360 Attach Rate"],
     valueType: "percent",
   },
   {
     label: "Premium Mix Rate",
-    valueCandidates: ["Premium Mix Rate", "Premium Mix Rate %Tgt", "Premium Mix"],
+    valueCandidates: ["Premium Mix Rate"],
     valueType: "percent",
   },
 ];
