@@ -7,41 +7,49 @@ const METRIC_GROUPS = [
     label: "GP Per Labor Hour Actual",
     valueCandidates: ["GP Per Labor Hour Actual"],
     valueType: "currency",
+    columnHeader: "Actual",
   },
   {
     label: "PP Act %Tgt",
     valueCandidates: ["PP Act %Tgt"],
     valueType: "percent",
+    columnHeader: "%Tgt",
   },
   {
     label: "Rebiz Conv",
     valueCandidates: ["Rebiz Conv"],
     valueType: "percent",
+    columnHeader: "Actual",
   },
   {
     label: "Acc GP Pct Actual",
     valueCandidates: ["Acc GP Pct Actual"],
     valueType: "percent",
+    columnHeader: "Actual",
   },
   {
     label: "CSAT Actual",
     valueCandidates: ["CSAT Actual"],
     valueType: "number",
+    columnHeader: "Actual",
   },
   {
     label: "Visa Priority Rate",
     valueCandidates: ["Visa Priority Rate"],
     valueType: "percent",
+    columnHeader: "Rate",
   },
   {
     label: "Indexed P360 Attach Rate",
     valueCandidates: ["Indexed P360 Attach Rate"],
     valueType: "percent",
+    columnHeader: "Rate",
   },
   {
     label: "Premium Mix Rate",
     valueCandidates: ["Premium Mix Rate"],
     valueType: "percent",
+    columnHeader: "Rate",
   },
 ];
 
@@ -204,7 +212,7 @@ function renderMetricTable(metricGroup) {
       <tr>
         <th>District</th>
         <th>Store Name</th>
-        <th>${isCurrency ? "Actual" : "% to Target"}</th>
+        <th>${escapeHtml(metricGroup.columnHeader)}</th>
       </tr>
     </thead>
     <tbody>
