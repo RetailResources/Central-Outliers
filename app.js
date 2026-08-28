@@ -4,36 +4,44 @@ const WORKBOOK_URL = "cslb-stores.xlsx";
 
 const METRIC_GROUPS = [
   {
-    label: "GP Per Labor Hour",
-    valueCandidates: ["GP Per Labor Hour %Tgt", "GP Per Labor Hour % Tgt", "GP/LH %Tgt", "GPH %Tgt"],
+    label: "GP Per Labor Hour Actual",
+    valueCandidates: ["GP Per Labor Hour Actual", "GP Per Labor Hour", "GPH Actual"],
+    valueType: "currency",
   },
   {
-    label: "PP Act",
-    valueCandidates: ["PP Act %Tgt", "PP Act % Tgt", "PP Activity %Tgt"],
+    label: "PP Act %Tgt",
+    valueCandidates: ["PP Act %Tgt", "PP Act", "PP Activity %Tgt"],
+    valueType: "percent",
   },
   {
-    label: "ReBiz Conv",
-    valueCandidates: ["ReBiz Conv %Tgt", "ReBiz Conv % Tgt", "ReBiz %Tgt"],
+    label: "Rebiz Conv",
+    valueCandidates: ["Rebiz Conv", "ReBiz Conv %Tgt", "ReBiz Conv Actual"],
+    valueType: "percent",
   },
   {
-    label: "Acc GP Pct",
+    label: "Acc GP Pct Actual",
     valueCandidates: ["Acc GP Pct Actual", "Acc GP Pct", "Acc GP Actual"],
+    valueType: "percent",
   },
   {
-    label: "CSAT",
+    label: "CSAT Actual",
     valueCandidates: ["CSAT Actual", "CSAT", "Customer Satisfaction Actual"],
+    valueType: "number",
   },
   {
-    label: "Visa Priority",
-    valueCandidates: ["Visa Priority Rate %Tg", "Visa Priority Rate %Tgt", "Visa Priority Rate", "Visa %Tgt"],
+    label: "Visa Priority Rate",
+    valueCandidates: ["Visa Priority Rate", "Visa Priority Rate %Tgt", "Visa Priority Rate Actual"],
+    valueType: "percent",
   },
   {
-    label: "P360 Attach",
-    valueCandidates: ["P360 Attach Rate %Tgt", "P360 Attach Rate % Tgt", "P360 Attach %Tgt"],
+    label: "Indexed P360 Attach Rate",
+    valueCandidates: ["Indexed P360 Attach Rate", "P360 Attach Rate", "P360 Attach Rate %Tgt"],
+    valueType: "percent",
   },
   {
-    label: "Premium Mix",
-    valueCandidates: ["Premium Mix Rate %Tgt", "Premium Mix Rate % Tgt", "Premium %Tgt"],
+    label: "Premium Mix Rate",
+    valueCandidates: ["Premium Mix Rate", "Premium Mix Rate %Tgt", "Premium Mix"],
+    valueType: "percent",
   },
 ];
 
@@ -75,14 +83,11 @@ function parseNumeric(value) {
   return Number.isNaN(num) ? null : num;
 }
 
-function formatMetricValue(value, isCsat) {
+function formatMetricValue(value, valueType) {
   const numeric = parseNumeric(value);
   if (numeric === null) return "";
-  return isCsat ? numeric.toFixed(2) : `${numeric.toFixed(2)}%`;
-}
-
-function normalizeKey(key) {
-  return String(key || "").replace(/\s+/g, " ").trim();
+  if (valueType === "currency") return `$${numeric.toFixed(2)}`;
+  return valueType === "number" ? numeric.toFixed(2) : `${numeric.toFixed(2)}%`;
 }
 
 function getSheetWithFallback(workbook, candidates) {
@@ -154,7 +159,7 @@ function parseStores(sheet) {
 function renderMetricTable(metricGroup) {
   const mode = el.modeSelect.value;
   const sortDirection = mode === "highest" ? -1 : 1;
-  const isCsat = normalizeLookup(metricGroup.label).includes("csat");
+  const isCurrency = metricGroup.valueType === "currency";
 
   const rows = state.stores
     .map((row) => {
@@ -199,7 +204,7 @@ function renderMetricTable(metricGroup) {
       <tr>
         <th>District</th>
         <th>Store Name</th>
-        <th>${isCsat ? "CSAT Actual" : "Percent to Target"}</th>
+        <th>${isCurrency ? "Actual" : "% to Target"}</th>
       </tr>
     </thead>
     <tbody>
@@ -209,7 +214,7 @@ function renderMetricTable(metricGroup) {
             <tr>
               <td>${escapeHtml(row.districtName)}</td>
               <td>${escapeHtml(row.storeName)}</td>
-              <td>${escapeHtml(formatMetricValue(row.metricValue, isCsat))}</td>
+              <td>${escapeHtml(formatMetricValue(row.metricValue, metricGroup.valueType))}</td>
             </tr>
           `
         )
