@@ -7,49 +7,49 @@ const METRIC_GROUPS = [
     label: "GP Per Labor Hour Actual",
     valueCandidates: ["GP Per Labor Hour Actual"],
     valueType: "currency",
-    columnHeader: "Actual",
+    columnHeader: "GP Per Labor Hour Actual",
   },
   {
     label: "PP Act %Tgt",
     valueCandidates: ["PP Act %Tgt"],
     valueType: "percent",
-    columnHeader: "%Tgt",
+    columnHeader: "PP Act %Tgt",
   },
   {
     label: "Rebiz Conv",
     valueCandidates: ["Rebiz Conv"],
     valueType: "percent",
-    columnHeader: "Actual",
+    columnHeader: "Rebiz Conv",
   },
   {
     label: "Acc GP Pct Actual",
     valueCandidates: ["Acc GP Pct Actual"],
     valueType: "percent",
-    columnHeader: "Actual",
+    columnHeader: "Acc GP Pct Actual",
   },
   {
     label: "CSAT Actual",
     valueCandidates: ["CSAT Actual"],
     valueType: "number",
-    columnHeader: "Actual",
+    columnHeader: "CSAT Actual",
   },
   {
     label: "Visa Priority Rate",
     valueCandidates: ["Visa Priority Rate"],
     valueType: "percent",
-    columnHeader: "Rate",
+    columnHeader: "Visa Priority Rate",
   },
   {
     label: "Indexed P360 Attach Rate",
     valueCandidates: ["Indexed P360 Attach Rate"],
     valueType: "percent",
-    columnHeader: "Rate",
+    columnHeader: "Indexed P360 Attach Rate",
   },
   {
     label: "Premium Mix Rate",
     valueCandidates: ["Premium Mix Rate"],
     valueType: "percent",
-    columnHeader: "Rate",
+    columnHeader: "Premium Mix Rate",
   },
 ];
 
@@ -167,7 +167,6 @@ function parseStores(sheet) {
 function renderMetricTable(metricGroup) {
   const mode = el.modeSelect.value;
   const sortDirection = mode === "highest" ? -1 : 1;
-  const isCurrency = metricGroup.valueType === "currency";
 
   const rows = state.stores
     .map((row) => {
