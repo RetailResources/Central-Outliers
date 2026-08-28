@@ -83,7 +83,7 @@ function formatMetricValue(value, valueType) {
   const numeric = parseNumeric(value);
   if (numeric === null) return "";
   if (valueType === "currency") return `$${numeric.toFixed(2)}`;
-  return valueType === "number" ? numeric.toFixed(2) : `${numeric.toFixed(2)}%`;
+  return valueType === "number" ? numeric.toFixed(2) : `${(numeric * 100).toFixed(2)}%`;
 }
 
 function getSheetWithFallback(workbook, candidates) {
