@@ -117,10 +117,6 @@ function findColumn(row, candidates) {
     const exact = keys.find((k) => normalizeLookup(k) === normalizeLookup(candidate));
     if (exact) return exact;
   }
-  for (const candidate of candidates) {
-    const fuzzy = keys.find((k) => normalizeLookup(k).includes(normalizeLookup(candidate)));
-    if (fuzzy) return fuzzy;
-  }
   return "";
 }
 
