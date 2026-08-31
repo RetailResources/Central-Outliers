@@ -4,6 +4,11 @@ const WORKBOOK_URL = "cslb-stores.xlsx";
 
 const METRIC_GROUPS = [
   {
+    label: "Ranking",
+    columnLetter: "F",
+    valueType: "number",
+  },
+  {
     label: "GP Per Labor Hour Actual",
     columnLetter: "I",
     valueType: "currency",
