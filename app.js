@@ -2,63 +2,107 @@
 
 const WORKBOOK_URL = "cslb-stores.xlsx";
 
-const METRIC_GROUPS = [
-  {
-    label: "Ranking",
-    columnLetter: "F",
-    valueType: "rank",
+const DASHBOARD_CONFIG = {
+  defaultMode: "stores",
+  modes: {
+    stores: {
+      label: "Stores",
+      sheetCandidates: ["Store Sheet", "Store", "Store Data"],
+      districtColumnLetter: "A",
+      nameColumnLetter: "D",
+      nameHeader: "Store Name",
+      itemLabelPlural: "stores",
+      metrics: [
+        {
+          label: "Ranking",
+          columnLetter: "F",
+          valueType: "rank",
+        },
+        {
+          label: "GP Per Labor Hour Actual",
+          columnLetter: "I",
+          valueType: "currency",
+        },
+        {
+          label: "PP Act %Tgt",
+          columnLetter: "O",
+          valueType: "percent",
+        },
+        {
+          label: "Rebiz Conv",
+          columnLetter: "S",
+          valueType: "percent",
+        },
+        {
+          label: "Acc GP Pct Actual",
+          columnLetter: "W",
+          valueType: "percent",
+        },
+        {
+          label: "CSAT Actual",
+          columnLetter: "Y",
+          valueType: "number",
+        },
+        {
+          label: "Visa Priority Rate",
+          columnLetter: "AC",
+          valueType: "percent",
+        },
+        {
+          label: "Indexed P360 Attach Rate",
+          columnLetter: "AG",
+          valueType: "percent",
+        },
+        {
+          label: "Premium Mix Rate",
+          columnLetter: "AM",
+          valueType: "percent",
+        },
+      ],
+    },
+    employees: {
+      label: "Employees",
+      sheetCandidates: ["Employee Sheet", "Employees", "Employee", "Employee Data"],
+      districtColumnLetter: "A",
+      nameColumnLetter: "D",
+      nameHeader: "Employee Name",
+      itemLabelPlural: "employees",
+      metrics: [
+        {
+          label: "Ranking",
+          columnLetter: "F",
+          valueType: "rank",
+        },
+        {
+          label: "Employee Metric 1 (set column)",
+          columnLetter: "I",
+          valueType: "number",
+        },
+        {
+          label: "Employee Metric 2 (set column)",
+          columnLetter: "O",
+          valueType: "percent",
+        },
+      ],
+    },
   },
-  {
-    label: "GP Per Labor Hour Actual",
-    columnLetter: "I",
-    valueType: "currency",
-  },
-  {
-    label: "PP Act %Tgt",
-    columnLetter: "O",
-    valueType: "percent",
-  },
-  {
-    label: "Rebiz Conv",
-    columnLetter: "S",
-    valueType: "percent",
-  },
-  {
-    label: "Acc GP Pct Actual",
-    columnLetter: "W",
-    valueType: "percent",
-  },
-  {
-    label: "CSAT Actual",
-    columnLetter: "Y",
-    valueType: "number",
-  },
-  {
-    label: "Visa Priority Rate",
-    columnLetter: "AC",
-    valueType: "percent",
-  },
-  {
-    label: "Indexed P360 Attach Rate",
-    columnLetter: "AG",
-    valueType: "percent",
-  },
-  {
-    label: "Premium Mix Rate",
-    columnLetter: "AM",
-    valueType: "percent",
-  },
-];
+};
 
 const state = {
   workbook: null,
-  stores: [],
+  dataByMode: {
+    stores: [],
+    employees: [],
+  },
 };
 
 const el = {
   statusBar: document.getElementById("statusBar"),
   metricsHost: document.getElementById("metricsHost"),
-  modeSelect: document.getElementById("modeSelect"),
+  dashboardModeSelect: document.getElementById("dashboardModeSelect"),
+  viewModeSelect: document.getElementById("viewModeSelect"),
+  districtControl: document.getElementById("districtControl"),
+  districtSelect: document.getElementById("districtSelect"),
 };
 
 function escapeHtml(value) {
@@ -151,54 +195,91 @@ function formatExcelDate(cell) {
   return normalizeText(value);
 }
 
-function parseStores(sheet) {
+function parseRowsForMode(sheet, modeConfig) {
   if (!sheet) return [];
 
   const rows = XLSX.utils.sheet_to_json(sheet, { defval: "", header: 1 });
   if (!rows.length) return [];
 
-  const storeRows = rows.slice(1);
-
-  return storeRows.map((row) => {
-    const districtName = normalizeText(row[0]); // Column A
-    const storeName = normalizeText(row[3]); // Column D
-
-    return {
-      __districtName: districtName,
-      __storeName: storeName,
-      __rawRow: row,
-    };
-  });
+  return rows.slice(1).map((row) => ({
+    __districtName: normalizeText(getRowValueByColumnLetter(row, modeConfig.districtColumnLetter)),
+    __itemName: normalizeText(getRowValueByColumnLetter(row, modeConfig.nameColumnLetter)),
+    __rawRow: row,
+  }));
 }
 
-function renderMetricTable(metricGroup) {
-  const mode = el.modeSelect.value;
+function getActiveModeKey() {
+  return el.dashboardModeSelect.value || DASHBOARD_CONFIG.defaultMode;
+}
+
+function getActiveModeConfig() {
+  return DASHBOARD_CONFIG.modes[getActiveModeKey()] || DASHBOARD_CONFIG.modes[DASHBOARD_CONFIG.defaultMode];
+}
+
+function getFilteredRowsForActiveMode() {
+  const modeKey = getActiveModeKey();
+  const rows = state.dataByMode[modeKey] || [];
+  if (modeKey !== "employees") return rows;
+
+  const selectedDistrict = el.districtSelect.value;
+  if (!selectedDistrict || selectedDistrict === "all") return rows;
+  return rows.filter((row) => normalizeText(row.__districtName) === selectedDistrict);
+}
+
+function populateDistrictOptions() {
+  const previous = el.districtSelect.value;
+  const districts = Array.from(
+    new Set(
+      (state.dataByMode.employees || [])
+        .map((row) => normalizeText(row.__districtName))
+        .filter(Boolean)
+    )
+  ).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+
+  const options = ['<option value="all">All Districts</option>']
+    .concat(
+      districts.map((district) => `<option value="${escapeHtml(district)}">${escapeHtml(district)}</option>`)
+    )
+    .join("");
+
+  el.districtSelect.innerHTML = options;
+  if (previous && districts.includes(previous)) {
+    el.districtSelect.value = previous;
+  } else {
+    el.districtSelect.value = "all";
+  }
+}
+
+function updateControlVisibility() {
+  const showDistrict = getActiveModeKey() === "employees";
+  el.districtControl.hidden = !showDistrict;
+}
+
+function renderMetricTable(metricGroup, modeConfig, sourceRows) {
+  const viewMode = el.viewModeSelect.value;
   const isRankMetric = metricGroup.valueType === "rank";
   const sortDirection = isRankMetric
-    ? mode === "highest"
+    ? viewMode === "highest"
       ? 1
       : -1
-    : mode === "highest"
+    : viewMode === "highest"
       ? -1
       : 1;
 
-  const rows = state.stores
+  const rows = sourceRows
     .map((row) => {
-      const districtName = normalizeText(row.__districtName);
-      const storeName = normalizeText(row.__storeName);
       const metricValue = getRowValueByColumnLetter(row.__rawRow, metricGroup.columnLetter);
-
       return {
-        districtName: districtName || "N/A",
-        storeName,
+        districtName: normalizeText(row.__districtName) || "N/A",
+        itemName: normalizeText(row.__itemName),
         metricValue,
         sortValue: parseNumeric(metricValue),
       };
     })
-    .filter((row) => row.storeName && row.sortValue !== null)
+    .filter((row) => row.itemName && row.sortValue !== null)
     .sort((a, b) => {
       if (a.sortValue === b.sortValue) {
-        return a.storeName.toLowerCase().localeCompare(b.storeName.toLowerCase());
+        return a.itemName.toLowerCase().localeCompare(b.itemName.toLowerCase());
       }
       return (a.sortValue - b.sortValue) * sortDirection;
     })
@@ -212,7 +293,7 @@ function renderMetricTable(metricGroup) {
 
   const caption = document.createElement("p");
   caption.className = "caption";
-  caption.textContent = `${mode === "highest" ? "Top 20" : "Bottom 20"} stores`;
+  caption.textContent = `${viewMode === "highest" ? "Top 20" : "Bottom 20"} ${modeConfig.itemLabelPlural}`;
 
   const wrap = document.createElement("div");
   wrap.className = "table-wrap";
@@ -224,7 +305,7 @@ function renderMetricTable(metricGroup) {
     <thead>
       <tr>
         <th>District</th>
-        <th>Store Name</th>
+        <th>${escapeHtml(modeConfig.nameHeader)}</th>
         <th>${escapeHtml(metricGroup.label)}</th>
       </tr>
     </thead>
@@ -234,7 +315,7 @@ function renderMetricTable(metricGroup) {
           (row) => `
             <tr>
               <td>${escapeHtml(row.districtName)}</td>
-              <td>${escapeHtml(row.storeName)}</td>
+              <td>${escapeHtml(row.itemName)}</td>
               <td>${escapeHtml(formatMetricValue(row.metricValue, metricGroup.valueType))}</td>
             </tr>
           `
@@ -252,10 +333,12 @@ function renderMetricTable(metricGroup) {
 }
 
 function renderAllMetrics() {
+  const modeConfig = getActiveModeConfig();
+  const rows = getFilteredRowsForActiveMode();
+
   el.metricsHost.innerHTML = "";
-  METRIC_GROUPS.forEach((metricGroup) => {
-    const card = renderMetricTable(metricGroup);
-    el.metricsHost.appendChild(card);
+  modeConfig.metrics.forEach((metricGroup) => {
+    el.metricsHost.appendChild(renderMetricTable(metricGroup, modeConfig, rows));
   });
 }
 
@@ -266,12 +349,16 @@ async function loadWorkbook() {
     const buffer = await response.arrayBuffer();
     state.workbook = XLSX.read(buffer, { type: "array" });
 
-    const storeSheet = getSheetWithFallback(state.workbook, ["Store Sheet", "Store", "Store Data"]);
-    state.stores = parseStores(storeSheet);
+    Object.entries(DASHBOARD_CONFIG.modes).forEach(([modeKey, modeConfig]) => {
+      const sheet = getSheetWithFallback(state.workbook, modeConfig.sheetCandidates);
+      state.dataByMode[modeKey] = parseRowsForMode(sheet, modeConfig);
+    });
 
-    const dateSheet = state.workbook.Sheets["Date"];
+    const dateSheet = state.workbook.Sheets.Date;
     const dataThrough = formatExcelDate(dateSheet?.A1);
 
+    populateDistrictOptions();
+    updateControlVisibility();
     renderAllMetrics();
 
     el.statusBar.innerHTML = dataThrough
@@ -288,6 +375,11 @@ async function loadWorkbook() {
   }
 }
 
-el.modeSelect.addEventListener("change", renderAllMetrics);
+el.dashboardModeSelect.addEventListener("change", () => {
+  updateControlVisibility();
+  renderAllMetrics();
+});
+el.viewModeSelect.addEventListener("change", renderAllMetrics);
+el.districtSelect.addEventListener("change", renderAllMetrics);
 
 loadWorkbook();
