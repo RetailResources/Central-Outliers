@@ -6,7 +6,7 @@ const METRIC_GROUPS = [
   {
     label: "Ranking",
     columnLetter: "F",
-    valueType: "number",
+    valueType: "rank",
   },
   {
     label: "GP Per Labor Hour Actual",
@@ -89,6 +89,7 @@ function formatMetricValue(value, valueType) {
   if (numeric === null) return "";
   if (valueType === "currency") return `$${numeric.toFixed(2)}`;
   if (valueType === "number") return numeric.toFixed(2);
+  if (valueType === "rank") return String(Math.round(numeric));
   if (valueType === "percent") return `${(numeric * 100).toFixed(2)}%`;
   if (valueType === "percentRaw") return `${numeric.toFixed(2)}%`;
   return String(value);
@@ -172,7 +173,14 @@ function parseStores(sheet) {
 
 function renderMetricTable(metricGroup) {
   const mode = el.modeSelect.value;
-  const sortDirection = mode === "highest" ? -1 : 1;
+  const isRankMetric = metricGroup.valueType === "rank";
+  const sortDirection = isRankMetric
+    ? mode === "highest"
+      ? 1
+      : -1
+    : mode === "highest"
+      ? -1
+      : 1;
 
   const rows = state.stores
     .map((row) => {
