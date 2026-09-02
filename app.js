@@ -350,11 +350,11 @@ async function loadWorkbook() {
     state.workbook = XLSX.read(buffer, { type: "array" });
 
     Object.entries(DASHBOARD_CONFIG.modes).forEach(([modeKey, modeConfig]) => {
-      const sheet = getSheetWithFallback(state.workbook, modeConfig.sheetCandidates);
+      const sheet = getSheetWithFallback(state.workbook, modeConfig.sheetCandidates || []);
       state.dataByMode[modeKey] = parseRowsForMode(sheet, modeConfig);
     });
 
-    const dateSheet = state.workbook.Sheets.Date;
+    const dateSheet = getSheetWithFallback(state.workbook, ["Date"]);
     const dataThrough = formatExcelDate(dateSheet?.A1);
 
     populateDistrictOptions();
