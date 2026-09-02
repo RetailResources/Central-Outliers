@@ -248,13 +248,22 @@ function parseRowsForMode(sheet, modeConfig) {
   const rows = XLSX.utils.sheet_to_json(sheet, { defval: "", header: 1 });
   if (!rows.length) return [];
 
-  return rows.slice(1).map((row) => ({
-    __districtName: normalizeText(getRowValueByColumnLetter(row, modeConfig.districtColumnLetter)),
-    __storeName: normalizeText(getRowValueByColumnLetter(row, modeConfig.storeNameColumnLetter)),
-    __employeeName: normalizeText(getRowValueByColumnLetter(row, modeConfig.employeeNameColumnLetter)),
-    __itemName: normalizeText(getRowValueByColumnLetter(row, modeConfig.nameColumnLetter)),
-    __rawRow: row,
-  }));
+  return rows
+    .slice(1)
+    .filter((row) => {
+      if (modeConfig.renderAsEmployeeMode) {
+        const columnC = normalizeText(row?.[2]);
+        return columnC.toUpperCase() !== "RSM";
+      }
+      return true;
+    })
+    .map((row) => ({
+      __districtName: normalizeText(getRowValueByColumnLetter(row, modeConfig.districtColumnLetter)),
+      __storeName: normalizeText(getRowValueByColumnLetter(row, modeConfig.storeNameColumnLetter)),
+      __employeeName: normalizeText(getRowValueByColumnLetter(row, modeConfig.employeeNameColumnLetter)),
+      __itemName: normalizeText(getRowValueByColumnLetter(row, modeConfig.nameColumnLetter)),
+      __rawRow: row,
+    }));
 }
 
 function getActiveModeKey() {
