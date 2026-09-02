@@ -13,15 +13,28 @@
         <div>
           <p class="eyebrow">Central</p>
           <h1>Outliers</h1>
-          <p class="subtle">Compare the bottom or top 20 stores across all metrics.</p>
+          <p class="subtle">Compare the bottom or top 20 stores or employees across all metrics.</p>
         </div>
 
         <div class="controls">
           <div class="control">
-            <label for="modeSelect">View</label>
-            <select id="modeSelect">
+            <label for="dashboardModeSelect">Mode</label>
+            <select id="dashboardModeSelect">
+              <option value="stores">Stores</option>
+              <option value="employees">Employees</option>
+            </select>
+          </div>
+          <div class="control">
+            <label for="viewModeSelect">View</label>
+            <select id="viewModeSelect">
               <option value="lowest">Bottom 20</option>
               <option value="highest">Top 20</option>
+            </select>
+          </div>
+          <div class="control" id="districtControl" hidden>
+            <label for="districtSelect">District</label>
+            <select id="districtSelect">
+              <option value="all">All Districts</option>
             </select>
           </div>
         </div>
