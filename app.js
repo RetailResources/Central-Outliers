@@ -1,13 +1,14 @@
 /* global XLSX */
 
 const WORKBOOK_URL = "cslb-stores.xlsx";
+const BUILD_STAMP = "2026-09-02-refresh-1";
 
 const DASHBOARD_CONFIG = {
   defaultMode: "stores",
   modes: {
     stores: {
       label: "Stores",
-      sheetCandidates: ["Store Sheet", "Store", "Store Data"],
+      sheetCandidates: ["Store", "Store Sheet", "Store Data"],
       districtColumnLetter: "A",
       nameColumnLetter: "D",
       nameHeader: "Store Name",
@@ -62,7 +63,7 @@ const DASHBOARD_CONFIG = {
     },
     employees: {
       label: "Employees",
-      sheetCandidates: ["Employee Sheet", "Employees", "Employee", "Employee Data"],
+      sheetCandidates: ["Employee", "Employee Sheet", "Employees", "Employee Data"],
       districtColumnLetter: "A",
       storeNameColumnLetter: "F",
       employeeNameColumnLetter: "E",
@@ -321,14 +322,18 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
         districtName: normalizeText(row.__districtName) || "N/A",
         storeName: normalizeText(row.__storeName) || "N/A",
         employeeName: normalizeText(row.__employeeName) || "N/A",
+        itemName: normalizeText(row.__itemName) || "N/A",
         metricValue,
         sortValue: parseNumeric(metricValue),
       };
     })
-    .filter((row) => row.employeeName)
+    .filter((row) => row.employeeName || row.itemName)
     .sort((a, b) => {
+      const aLabel = modeConfig.renderAsEmployeeMode ? a.employeeName : a.itemName;
+      const bLabel = modeConfig.renderAsEmployeeMode ? b.employeeName : b.itemName;
+
       if (a.sortValue === b.sortValue) {
-        return a.employeeName.toLowerCase().localeCompare(b.employeeName.toLowerCase());
+        return aLabel.toLowerCase().localeCompare(bLabel.toLowerCase());
       }
       if (a.sortValue === null) return 1;
       if (b.sortValue === null) return -1;
@@ -390,7 +395,7 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
             (row) => `
               <tr>
                 <td>${escapeHtml(row.districtName)}</td>
-                <td>${escapeHtml(row.employeeName || row.itemName)}</td>
+                <td>${escapeHtml(row.itemName)}</td>
                 <td>${escapeHtml(formatMetricValue(row.metricValue, metricGroup.valueType))}</td>
               </tr>
             `
@@ -438,8 +443,8 @@ async function loadWorkbook() {
     renderAllMetrics();
 
     el.statusBar.innerHTML = dataThrough
-      ? `<strong>Data Through:</strong> ${escapeHtml(dataThrough)}`
-      : `<strong>Data Through:</strong> <em>Not found</em>`;
+      ? `<strong>Data Through:</strong> ${escapeHtml(dataThrough)} <span class="subtle">(${BUILD_STAMP})</span>`
+      : `<strong>Data Through:</strong> <em>Not found</em> <span class="subtle">(${BUILD_STAMP})</span>`;
   } catch (err) {
     console.error(err);
     el.statusBar.innerHTML = `
@@ -447,6 +452,8 @@ async function loadWorkbook() {
       Please make sure <code>${escapeHtml(WORKBOOK_URL)}</code> exists in the repository root and is being served by the site.
       <br /><br />
       ${escapeHtml(err.message || String(err))}
+      <br /><br />
+      <span class="subtle">${escapeHtml(BUILD_STAMP)}</span>
     `;
   }
 }
