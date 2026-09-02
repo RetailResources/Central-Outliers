@@ -64,23 +64,53 @@ const DASHBOARD_CONFIG = {
       label: "Employees",
       sheetCandidates: ["Employee Sheet", "Employees", "Employee", "Employee Data"],
       districtColumnLetter: "A",
-      nameColumnLetter: "D",
-      nameHeader: "Employee Name",
+      storeNameColumnLetter: "F",
+      employeeNameColumnLetter: "E",
       itemLabelPlural: "employees",
       metrics: [
         {
           label: "Ranking",
-          columnLetter: "F",
+          columnLetter: "H",
           valueType: "rank",
         },
         {
-          label: "Employee Metric 1 (set column)",
-          columnLetter: "I",
+          label: "GP per Labor Hour Actual",
+          columnLetter: "K",
+          valueType: "currency",
+        },
+        {
+          label: "Rebiz Act Conversion",
+          columnLetter: "Q",
+          valueType: "percent",
+        },
+        {
+          label: "Rebiz Upgrade Conversion",
+          columnLetter: "W",
+          valueType: "percent",
+        },
+        {
+          label: "Accessory Per Phone",
+          columnLetter: "AA",
           valueType: "number",
         },
         {
-          label: "Employee Metric 2 (set column)",
-          columnLetter: "O",
+          label: "CSAT",
+          columnLetter: "AC",
+          valueType: "number",
+        },
+        {
+          label: "Visa Priority",
+          columnLetter: "AG",
+          valueType: "percent",
+        },
+        {
+          label: "P360 Attach",
+          columnLetter: "AK",
+          valueType: "percent",
+        },
+        {
+          label: "Premium Mix",
+          columnLetter: "AQ",
           valueType: "percent",
         },
       ],
@@ -203,6 +233,8 @@ function parseRowsForMode(sheet, modeConfig) {
 
   return rows.slice(1).map((row) => ({
     __districtName: normalizeText(getRowValueByColumnLetter(row, modeConfig.districtColumnLetter)),
+    __storeName: normalizeText(getRowValueByColumnLetter(row, modeConfig.storeNameColumnLetter)),
+    __employeeName: normalizeText(getRowValueByColumnLetter(row, modeConfig.employeeNameColumnLetter)),
     __itemName: normalizeText(getRowValueByColumnLetter(row, modeConfig.nameColumnLetter)),
     __rawRow: row,
   }));
@@ -269,9 +301,13 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
   const rows = sourceRows
     .map((row) => {
       const metricValue = getRowValueByColumnLetter(row.__rawRow, metricGroup.columnLetter);
+      const itemName = modeConfig.employeeNameColumnLetter
+        ? normalizeText(row.__employeeName)
+        : normalizeText(row.__itemName);
       return {
         districtName: normalizeText(row.__districtName) || "N/A",
-        itemName: normalizeText(row.__itemName),
+        storeName: normalizeText(row.__storeName),
+        itemName,
         metricValue,
         sortValue: parseNumeric(metricValue),
       };
@@ -301,28 +337,53 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
   const table = document.createElement("table");
   table.className = "data-table";
 
-  table.innerHTML = `
-    <thead>
-      <tr>
-        <th>District</th>
-        <th>${escapeHtml(modeConfig.nameHeader)}</th>
-        <th>${escapeHtml(metricGroup.label)}</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${rows
-        .map(
-          (row) => `
-            <tr>
-              <td>${escapeHtml(row.districtName)}</td>
-              <td>${escapeHtml(row.itemName)}</td>
-              <td>${escapeHtml(formatMetricValue(row.metricValue, metricGroup.valueType))}</td>
-            </tr>
-          `
-        )
-        .join("")}
-    </tbody>
-  `;
+  if (modeConfig.employeeNameColumnLetter) {
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>Store Name</th>
+          <th>Employee</th>
+          <th>Metric</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows
+          .map(
+            (row) => `
+              <tr>
+                <td>${escapeHtml(row.storeName || "N/A")}</td>
+                <td>${escapeHtml(row.itemName)}</td>
+                <td>${escapeHtml(formatMetricValue(row.metricValue, metricGroup.valueType))}</td>
+              </tr>
+            `
+          )
+          .join("")}
+      </tbody>
+    `;
+  } else {
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>District</th>
+          <th>${escapeHtml(modeConfig.nameHeader)}</th>
+          <th>${escapeHtml(metricGroup.label)}</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows
+          .map(
+            (row) => `
+              <tr>
+                <td>${escapeHtml(row.districtName)}</td>
+                <td>${escapeHtml(row.itemName)}</td>
+                <td>${escapeHtml(formatMetricValue(row.metricValue, metricGroup.valueType))}</td>
+              </tr>
+            `
+          )
+          .join("")}
+      </tbody>
+    `;
+  }
 
   wrap.appendChild(table);
   card.appendChild(title);
