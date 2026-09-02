@@ -1,7 +1,6 @@
 /* global XLSX */
 
 const WORKBOOK_URL = "cslb-stores.xlsx";
-const BUILD_STAMP = "2026-09-02-refresh-1";
 
 const DASHBOARD_CONFIG = {
   defaultMode: "stores",
@@ -451,18 +450,35 @@ async function loadWorkbook() {
     updateControlVisibility();
     renderAllMetrics();
 
+    const refreshedAt = new Date().toLocaleString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+
     el.statusBar.innerHTML = dataThrough
-      ? `<strong>Data Through:</strong> ${escapeHtml(dataThrough)} <span class="subtle">(${BUILD_STAMP})</span>`
-      : `<strong>Data Through:</strong> <em>Not found</em> <span class="subtle">(${BUILD_STAMP})</span>`;
+      ? `<strong>Data Through:</strong> ${escapeHtml(dataThrough)} <span class="subtle">(${escapeHtml(refreshedAt)})</span>`
+      : `<strong>Data Through:</strong> <em>Not found</em> <span class="subtle">(${escapeHtml(refreshedAt)})</span>`;
   } catch (err) {
     console.error(err);
+    const refreshedAt = new Date().toLocaleString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit",
+    });
     el.statusBar.innerHTML = `
       <strong>Unable to load workbook.</strong>
       Please make sure <code>${escapeHtml(WORKBOOK_URL)}</code> exists in the repository root and is being served by the site.
       <br /><br />
       ${escapeHtml(err.message || String(err))}
       <br /><br />
-      <span class="subtle">${escapeHtml(BUILD_STAMP)}</span>
+      <span class="subtle">${escapeHtml(refreshedAt)}</span>
     `;
   }
 }
