@@ -66,6 +66,7 @@ const DASHBOARD_CONFIG = {
       districtColumnLetter: "A",
       storeNameColumnLetter: "F",
       employeeNameColumnLetter: "E",
+      renderAsEmployeeMode: true,
       itemLabelPlural: "employees",
       metrics: [
         {
@@ -167,6 +168,21 @@ function formatMetricValue(value, valueType) {
   if (valueType === "percent") return `${(numeric * 100).toFixed(2)}%`;
   if (valueType === "percentRaw") return `${numeric.toFixed(2)}%`;
   return String(value);
+}
+
+function formatRawMetricValue(value, valueType) {
+  const raw = value === null || value === undefined ? "" : String(value).trim();
+  if (!raw) return "";
+
+  const numeric = parseNumeric(raw);
+  if (numeric === null) return escapeHtml(raw);
+
+  if (valueType === "currency") return `$${numeric.toFixed(2)}`;
+  if (valueType === "number") return numeric.toFixed(2);
+  if (valueType === "rank") return String(Math.round(numeric));
+  if (valueType === "percent") return `${(numeric * 100).toFixed(2)}%`;
+  if (valueType === "percentRaw") return `${numeric.toFixed(2)}%`;
+  return escapeHtml(raw);
 }
 
 function getSheetWithFallback(workbook, candidates) {
@@ -300,23 +316,22 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
 
   const rows = sourceRows
     .map((row) => {
-      const metricValue = getRowValueByColumnLetter(row.__rawRow, metricGroup.columnLetter);
-      const itemName = modeConfig.employeeNameColumnLetter
-        ? normalizeText(row.__employeeName)
-        : normalizeText(row.__itemName);
+      const metricValue = row.__rawRow?.[columnLetterToIndex(metricGroup.columnLetter)] ?? "";
       return {
         districtName: normalizeText(row.__districtName) || "N/A",
-        storeName: normalizeText(row.__storeName),
-        itemName,
+        storeName: normalizeText(row.__storeName) || "N/A",
+        employeeName: normalizeText(row.__employeeName) || "N/A",
         metricValue,
         sortValue: parseNumeric(metricValue),
       };
     })
-    .filter((row) => row.itemName && row.sortValue !== null)
+    .filter((row) => row.employeeName)
     .sort((a, b) => {
       if (a.sortValue === b.sortValue) {
-        return a.itemName.toLowerCase().localeCompare(b.itemName.toLowerCase());
+        return a.employeeName.toLowerCase().localeCompare(b.employeeName.toLowerCase());
       }
+      if (a.sortValue === null) return 1;
+      if (b.sortValue === null) return -1;
       return (a.sortValue - b.sortValue) * sortDirection;
     })
     .slice(0, 20);
@@ -337,7 +352,7 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
   const table = document.createElement("table");
   table.className = "data-table";
 
-  if (modeConfig.employeeNameColumnLetter) {
+  if (modeConfig.renderAsEmployeeMode) {
     table.innerHTML = `
       <thead>
         <tr>
@@ -351,9 +366,9 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
           .map(
             (row) => `
               <tr>
-                <td>${escapeHtml(row.storeName || "N/A")}</td>
-                <td>${escapeHtml(row.itemName)}</td>
-                <td>${escapeHtml(formatMetricValue(row.metricValue, metricGroup.valueType))}</td>
+                <td>${escapeHtml(row.storeName)}</td>
+                <td>${escapeHtml(row.employeeName)}</td>
+                <td>${formatRawMetricValue(row.metricValue, metricGroup.valueType)}</td>
               </tr>
             `
           )
@@ -375,7 +390,7 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
             (row) => `
               <tr>
                 <td>${escapeHtml(row.districtName)}</td>
-                <td>${escapeHtml(row.itemName)}</td>
+                <td>${escapeHtml(row.employeeName || row.itemName)}</td>
                 <td>${escapeHtml(formatMetricValue(row.metricValue, metricGroup.valueType))}</td>
               </tr>
             `
