@@ -369,7 +369,7 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
         <tr>
           <th>Store Name</th>
           <th>Employee</th>
-          <th>Metric</th>
+          <th>${escapeHtml(metricGroup.label)}</th>
         </tr>
       </thead>
       <tbody>
