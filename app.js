@@ -252,7 +252,7 @@ function parseRowsForMode(sheet, modeConfig) {
     .filter((row) => {
       if (modeConfig.renderAsEmployeeMode) {
         const columnC = normalizeText(row?.[2]);
-        return columnC.toUpperCase() !== "RSM";
+        return !columnC.toUpperCase().includes("RSM");
       }
       return true;
     })
@@ -276,8 +276,6 @@ function getActiveModeConfig() {
 function getFilteredRowsForActiveMode() {
   const modeKey = getActiveModeKey();
   const rows = state.dataByMode[modeKey] || [];
-  if (modeKey !== "employees") return rows;
-
   const selectedDistrict = el.districtSelect.value;
   if (!selectedDistrict || selectedDistrict === "all") return rows;
   return rows.filter((row) => normalizeText(row.__districtName) === selectedDistrict);
@@ -308,7 +306,7 @@ function populateDistrictOptions() {
 }
 
 function updateControlVisibility() {
-  const showDistrict = getActiveModeKey() === "employees";
+  const showDistrict = true;
   el.districtControl.hidden = !showDistrict;
 }
 
