@@ -2,6 +2,75 @@
 
 const WORKBOOK_URL = "cslb-stores.xlsx";
 
+const DISTRICT_STYLE_METRICS = [
+  {
+    label: "Quintile",
+    valueColumnLetter: "D",
+    rankColumnLetter: "E",
+    valueType: "number",
+  },
+  {
+    label: "GP per Labor Hour Actual",
+    valueColumnLetter: "H",
+    rankColumnLetter: "K",
+    valueType: "currency",
+  },
+  {
+    label: "PP Act %Tgt",
+    valueColumnLetter: "N",
+    rankColumnLetter: "O",
+    valueType: "percent",
+  },
+  {
+    label: "Rebiz Conv",
+    valueColumnLetter: "R",
+    rankColumnLetter: "U",
+    valueType: "percent",
+  },
+  {
+    label: "Acc GP Pct Actual",
+    valueColumnLetter: "V",
+    rankColumnLetter: "W",
+    valueType: "percent",
+  },
+  {
+    label: "CSAT Actual",
+    valueColumnLetter: "X",
+    rankColumnLetter: "Y",
+    valueType: "number",
+  },
+  {
+    label: "Visa Priority Rate",
+    valueColumnLetter: "AB",
+    rankColumnLetter: "AE",
+    valueType: "percent",
+  },
+  {
+    label: "Indexed P360 Attach Rate",
+    valueColumnLetter: "AF",
+    rankColumnLetter: "AI",
+    valueType: "percent",
+  },
+  {
+    label: "Premium Mix Rate",
+    valueColumnLetter: "AL",
+    rankColumnLetter: "AO",
+    valueType: "percent",
+  },
+];
+
+function createDistrictStyleModeConfig(label, sheetCandidates) {
+  return {
+    label,
+    sheetCandidates,
+    districtColumnLetter: "C",
+    nameHeader: label,
+    itemLabelPlural: `${label.toLowerCase()}s`,
+    renderAsDistrictMode: true,
+    metrics: DISTRICT_STYLE_METRICS,
+  };
+}
+
 const DASHBOARD_CONFIG = {
   defaultMode: "stores",
   modes: {
@@ -116,6 +185,8 @@ const DASHBOARD_CONFIG = {
         },
       ],
     },
+    district: createDistrictStyleModeConfig("District", ["District", "District Sheet", "District Data"]),
+    region: createDistrictStyleModeConfig("Region", ["Region", "Region Sheet", "Region Data"]),
   },
 };
 
@@ -124,6 +195,8 @@ const state = {
   dataByMode: {
     stores: [],
     employees: [],
+    district: [],
+    region: [],
   },
 };
 
@@ -275,7 +348,9 @@ function getActiveModeConfig() {
 
 function getFilteredRowsForActiveMode() {
   const modeKey = getActiveModeKey();
+  const modeConfig = getActiveModeConfig();
   const rows = state.dataByMode[modeKey] || [];
+  if (modeConfig.renderAsDistrictMode) return rows;
   const selectedDistrict = el.districtSelect.value;
   if (!selectedDistrict || selectedDistrict === "all") return rows;
   return rows.filter((row) => normalizeText(row.__districtName) === selectedDistrict);
@@ -306,12 +381,78 @@ function populateDistrictOptions() {
 }
 
 function updateControlVisibility() {
-  const showDistrict = true;
+  const showDistrict = !getActiveModeConfig().renderAsDistrictMode;
   el.districtControl.hidden = !showDistrict;
 }
 
 function renderMetricTable(metricGroup, modeConfig, sourceRows) {
   const viewMode = el.viewModeSelect.value;
+
+  if (modeConfig.renderAsDistrictMode) {
+    const rows = sourceRows
+      .map((row) => ({
+        districtName: normalizeText(row.__districtName),
+        metricValue: row.__rawRow?.[columnLetterToIndex(metricGroup.valueColumnLetter)] ?? "",
+        rankValue: row.__rawRow?.[columnLetterToIndex(metricGroup.rankColumnLetter)] ?? "",
+        sortValue: parseNumeric(row.__rawRow?.[columnLetterToIndex(metricGroup.rankColumnLetter)] ?? ""),
+      }))
+      .filter((row) => row.districtName)
+      .sort((a, b) => {
+        if (a.sortValue === b.sortValue) {
+          return a.districtName.toLowerCase().localeCompare(b.districtName.toLowerCase());
+        }
+        if (a.sortValue === null) return 1;
+        if (b.sortValue === null) return -1;
+        return viewMode === "highest" ? a.sortValue - b.sortValue : b.sortValue - a.sortValue;
+      })
+      .slice(0, 20);
+
+    const card = document.createElement("section");
+    card.className = "metric-card";
+
+    const title = document.createElement("h2");
+    title.textContent = metricGroup.label;
+
+    const caption = document.createElement("p");
+    caption.className = "caption";
+    caption.textContent = `${viewMode === "highest" ? "Top 20" : "Bottom 20"} ${modeConfig.itemLabelPlural}`;
+
+    const wrap = document.createElement("div");
+    wrap.className = "table-wrap";
+
+    const table = document.createElement("table");
+    table.className = "data-table";
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>${escapeHtml(modeConfig.nameHeader)}</th>
+          <th>${escapeHtml(metricGroup.label)}</th>
+          <th>Rank</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows
+          .map(
+            (row) => `
+              <tr>
+                <td>${escapeHtml(row.districtName)}</td>
+                <td>${escapeHtml(formatMetricValue(row.metricValue, metricGroup.valueType))}</td>
+                <td>${escapeHtml(formatMetricValue(row.rankValue, "rank"))}</td>
+              </tr>
+            `
+          )
+          .join("")}
+      </tbody>
+    `;
+
+    wrap.appendChild(table);
+    card.appendChild(title);
+    card.appendChild(caption);
+    card.appendChild(wrap);
+
+    return card;
+  }
+
   const isRankMetric = metricGroup.valueType === "rank";
   const sortDirection = isRankMetric
     ? viewMode === "highest"
