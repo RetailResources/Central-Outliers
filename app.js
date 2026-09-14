@@ -355,7 +355,7 @@ function getActiveModeKey() {
 }
 
 function getActiveModeConfig() {
-  return DASHBOARD_CONFIG.modes[getActiveModeKey()] || null;
+  return DASHBOARD_CONFIG.modes[getActiveModeKey()] || DASHBOARD_CONFIG.modes[DASHBOARD_CONFIG.defaultMode];
 }
 
 function getFilteredRowsForActiveMode() {
@@ -548,10 +548,6 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
 
 function renderAllMetrics() {
   const modeConfig = getActiveModeConfig();
-  if (!modeConfig) {
-    el.metricsHost.innerHTML = "";
-    return;
-  }
   const rows = getFilteredRowsForActiveMode();
 
   el.metricsHost.innerHTML = "";
