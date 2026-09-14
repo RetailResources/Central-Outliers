@@ -2,6 +2,73 @@
 
 const WORKBOOK_URL = "cslb-stores.xlsx";
 
+function createDistrictStyleModeConfig({ label, sheetCandidates, nameColumnLetter, nameHeader, itemLabelPlural }) {
+  return {
+    label,
+    sheetCandidates,
+    nameColumnLetter,
+    nameHeader,
+    itemLabelPlural,
+    renderAsDistrictStyleMode: true,
+    metrics: [
+      {
+        label: "Overall Score",
+        columnLetter: "F",
+        rankColumnLetter: "E",
+        valueType: "number",
+      },
+      {
+        label: "GP Per Labor Hour Actual",
+        columnLetter: "H",
+        rankColumnLetter: "K",
+        valueType: "currency",
+      },
+      {
+        label: "PP Act %Tgt",
+        columnLetter: "N",
+        rankColumnLetter: "O",
+        valueType: "percent",
+      },
+      {
+        label: "Rebiz Conv",
+        columnLetter: "R",
+        rankColumnLetter: "U",
+        valueType: "percent",
+      },
+      {
+        label: "Acc GP Pct Actual",
+        columnLetter: "V",
+        rankColumnLetter: "W",
+        valueType: "percent",
+      },
+      {
+        label: "CSAT Actual",
+        columnLetter: "X",
+        rankColumnLetter: "Y",
+        valueType: "number",
+      },
+      {
+        label: "Visa Priority Rate",
+        columnLetter: "AB",
+        rankColumnLetter: "AE",
+        valueType: "percent",
+      },
+      {
+        label: "Indexed P360 Attach Rate",
+        columnLetter: "AF",
+        rankColumnLetter: "AI",
+        valueType: "percent",
+      },
+      {
+        label: "Premium Mix Rate",
+        columnLetter: "AL",
+        rankColumnLetter: "AO",
+        valueType: "percent",
+      },
+    ],
+  };
+}
+
 const DASHBOARD_CONFIG = {
   defaultMode: "stores",
   modes: {
@@ -11,6 +78,7 @@ const DASHBOARD_CONFIG = {
       districtColumnLetter: "A",
       nameColumnLetter: "D",
       nameHeader: "Store Name",
+      useDistrictFilter: true,
       itemLabelPlural: "stores",
       metrics: [
         {
@@ -67,6 +135,7 @@ const DASHBOARD_CONFIG = {
       storeNameColumnLetter: "F",
       employeeNameColumnLetter: "E",
       renderAsEmployeeMode: true,
+      useDistrictFilter: true,
       itemLabelPlural: "employees",
       metrics: [
         {
@@ -116,6 +185,20 @@ const DASHBOARD_CONFIG = {
         },
       ],
     },
+    district: createDistrictStyleModeConfig({
+      label: "District",
+      sheetCandidates: ["District", "District Sheet", "District Data"],
+      nameColumnLetter: "C",
+      nameHeader: "District",
+      itemLabelPlural: "districts",
+    }),
+    region: createDistrictStyleModeConfig({
+      label: "Region",
+      sheetCandidates: ["Region", "Region Sheet", "Region Data"],
+      nameColumnLetter: "C",
+      nameHeader: "Region",
+      itemLabelPlural: "regions",
+    }),
   },
 };
 
@@ -124,6 +207,8 @@ const state = {
   dataByMode: {
     stores: [],
     employees: [],
+    district: [],
+    region: [],
   },
 };
 
@@ -270,12 +355,14 @@ function getActiveModeKey() {
 }
 
 function getActiveModeConfig() {
-  return DASHBOARD_CONFIG.modes[getActiveModeKey()] || DASHBOARD_CONFIG.modes[DASHBOARD_CONFIG.defaultMode];
+  return DASHBOARD_CONFIG.modes[getActiveModeKey()] || null;
 }
 
 function getFilteredRowsForActiveMode() {
   const modeKey = getActiveModeKey();
   const rows = state.dataByMode[modeKey] || [];
+  const modeConfig = getActiveModeConfig();
+  if (!modeConfig?.useDistrictFilter) return rows;
   const selectedDistrict = el.districtSelect.value;
   if (!selectedDistrict || selectedDistrict === "all") return rows;
   return rows.filter((row) => normalizeText(row.__districtName) === selectedDistrict);
@@ -286,6 +373,7 @@ function populateDistrictOptions() {
   const districts = Array.from(
     new Set(
       (state.dataByMode.employees || [])
+        .concat(state.dataByMode.stores || [])
         .map((row) => normalizeText(row.__districtName))
         .filter(Boolean)
     )
@@ -306,7 +394,8 @@ function populateDistrictOptions() {
 }
 
 function updateControlVisibility() {
-  const showDistrict = true;
+  const modeConfig = getActiveModeConfig();
+  const showDistrict = Boolean(modeConfig?.useDistrictFilter);
   el.districtControl.hidden = !showDistrict;
 }
 
@@ -324,19 +413,34 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
   const rows = sourceRows
     .map((row) => {
       const metricValue = row.__rawRow?.[columnLetterToIndex(metricGroup.columnLetter)] ?? "";
+      const metricRankValue = metricGroup.rankColumnLetter
+        ? row.__rawRow?.[columnLetterToIndex(metricGroup.rankColumnLetter)] ?? ""
+        : "";
       return {
         districtName: normalizeText(row.__districtName) || "N/A",
         storeName: normalizeText(row.__storeName) || "N/A",
         employeeName: normalizeText(row.__employeeName) || "N/A",
         itemName: normalizeText(row.__itemName) || "N/A",
         metricValue,
+        metricRankValue,
         sortValue: parseNumeric(metricValue),
+        rankSortValue: parseNumeric(metricRankValue),
       };
     })
     .filter((row) => row.employeeName || row.itemName)
     .sort((a, b) => {
       const aLabel = modeConfig.renderAsEmployeeMode ? a.employeeName : a.itemName;
       const bLabel = modeConfig.renderAsEmployeeMode ? b.employeeName : b.itemName;
+
+      if (modeConfig.renderAsDistrictStyleMode && metricGroup.rankColumnLetter) {
+        if (a.rankSortValue === b.rankSortValue) {
+          return a.itemName.toLowerCase().localeCompare(b.itemName.toLowerCase());
+        }
+        if (a.rankSortValue === null) return 1;
+        if (b.rankSortValue === null) return -1;
+        const rankSortDirection = viewMode === "highest" ? 1 : -1;
+        return (a.rankSortValue - b.rankSortValue) * rankSortDirection;
+      }
 
       if (a.sortValue === b.sortValue) {
         return aLabel.toLowerCase().localeCompare(bLabel.toLowerCase());
@@ -386,6 +490,29 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
           .join("")}
       </tbody>
     `;
+  } else if (modeConfig.renderAsDistrictStyleMode) {
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>${escapeHtml(modeConfig.nameHeader)}</th>
+          <th>${escapeHtml(metricGroup.label)}</th>
+          <th>Rank</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows
+          .map(
+            (row) => `
+              <tr>
+                <td>${escapeHtml(row.itemName)}</td>
+                <td>${escapeHtml(formatMetricValue(row.metricValue, metricGroup.valueType))}</td>
+                <td>${escapeHtml(formatMetricValue(row.metricRankValue, "rank"))}</td>
+              </tr>
+            `
+          )
+          .join("")}
+      </tbody>
+    `;
   } else {
     table.innerHTML = `
       <thead>
@@ -421,6 +548,10 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
 
 function renderAllMetrics() {
   const modeConfig = getActiveModeConfig();
+  if (!modeConfig) {
+    el.metricsHost.innerHTML = "";
+    return;
+  }
   const rows = getFilteredRowsForActiveMode();
 
   el.metricsHost.innerHTML = "";
