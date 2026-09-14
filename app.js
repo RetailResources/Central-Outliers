@@ -417,10 +417,10 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
         ? row.__rawRow?.[columnLetterToIndex(metricGroup.rankColumnLetter)] ?? ""
         : "";
       return {
-        districtName: normalizeText(row.__districtName) || "N/A",
-        storeName: normalizeText(row.__storeName) || "N/A",
-        employeeName: normalizeText(row.__employeeName) || "N/A",
-        itemName: normalizeText(row.__itemName) || "N/A",
+        districtName: normalizeText(row.__districtName),
+        storeName: normalizeText(row.__storeName),
+        employeeName: normalizeText(row.__employeeName),
+        itemName: normalizeText(row.__itemName),
         metricValue,
         metricRankValue,
         sortValue: parseNumeric(metricValue),
@@ -481,8 +481,8 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
           .map(
             (row) => `
               <tr>
-                <td>${escapeHtml(row.storeName)}</td>
-                <td>${escapeHtml(row.employeeName)}</td>
+                <td>${escapeHtml(row.storeName || "N/A")}</td>
+                <td>${escapeHtml(row.employeeName || "N/A")}</td>
                 <td>${formatRawMetricValue(row.metricValue, metricGroup.valueType)}</td>
               </tr>
             `
@@ -504,7 +504,7 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
           .map(
             (row) => `
               <tr>
-                <td>${escapeHtml(row.itemName)}</td>
+                <td>${escapeHtml(row.itemName || "N/A")}</td>
                 <td>${escapeHtml(formatMetricValue(row.metricValue, metricGroup.valueType))}</td>
                 <td>${escapeHtml(formatMetricValue(row.metricRankValue, "rank"))}</td>
               </tr>
@@ -527,8 +527,8 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
           .map(
             (row) => `
               <tr>
-                <td>${escapeHtml(row.districtName)}</td>
-                <td>${escapeHtml(row.itemName)}</td>
+                <td>${escapeHtml(row.districtName || "N/A")}</td>
+                <td>${escapeHtml(row.itemName || "N/A")}</td>
                 <td>${escapeHtml(formatMetricValue(row.metricValue, metricGroup.valueType))}</td>
               </tr>
             `
