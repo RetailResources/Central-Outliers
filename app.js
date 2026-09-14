@@ -81,12 +81,16 @@ const DASHBOARD_CONFIG = {
     district: createDistrictStyleModeConfig({
       label: "District",
       sheetCandidates: ["District", "Districts", "District Sheet", "District Data"],
+      districtColumnLetter: "A",
+      nameColumnLetter: "D",
       nameHeader: "District",
       itemLabelPlural: "districts",
     }),
     region: createDistrictStyleModeConfig({
       label: "Region",
       sheetCandidates: ["Region", "Regions", "Region Sheet", "Region Data"],
+      districtColumnLetter: "A",
+      nameColumnLetter: "D",
       nameHeader: "Region",
       itemLabelPlural: "regions",
     }),
