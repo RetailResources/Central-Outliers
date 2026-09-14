@@ -2,64 +2,98 @@
 
 const WORKBOOK_URL = "cslb-stores.xlsx";
 
+const DISTRICT_STYLE_METRICS = [
+  {
+    label: "Ranking",
+    columnLetter: "F",
+    valueType: "rank",
+  },
+  {
+    label: "GP Per Labor Hour Actual",
+    columnLetter: "I",
+    valueType: "currency",
+  },
+  {
+    label: "PP Act %Tgt",
+    columnLetter: "O",
+    valueType: "percent",
+  },
+  {
+    label: "Rebiz Conv",
+    columnLetter: "S",
+    valueType: "percent",
+  },
+  {
+    label: "Acc GP Pct Actual",
+    columnLetter: "W",
+    valueType: "percent",
+  },
+  {
+    label: "CSAT Actual",
+    columnLetter: "Y",
+    valueType: "number",
+  },
+  {
+    label: "Visa Priority Rate",
+    columnLetter: "AC",
+    valueType: "percent",
+  },
+  {
+    label: "Indexed P360 Attach Rate",
+    columnLetter: "AG",
+    valueType: "percent",
+  },
+  {
+    label: "Premium Mix Rate",
+    columnLetter: "AM",
+    valueType: "percent",
+  },
+];
+
+function createDistrictStyleModeConfig({
+  label,
+  sheetCandidates,
+  nameHeader,
+  itemLabelPlural,
+  districtColumnLetter = "A",
+  nameColumnLetter = "D",
+}) {
+  return {
+    label,
+    sheetCandidates,
+    districtColumnLetter,
+    nameColumnLetter,
+    nameHeader,
+    itemLabelPlural,
+    metrics: DISTRICT_STYLE_METRICS,
+  };
+}
+
 const DASHBOARD_CONFIG = {
   defaultMode: "stores",
   modes: {
-    stores: {
+    stores: createDistrictStyleModeConfig({
       label: "Stores",
       sheetCandidates: ["Store", "Store Sheet", "Store Data"],
-      districtColumnLetter: "A",
-      nameColumnLetter: "D",
       nameHeader: "Store Name",
       itemLabelPlural: "stores",
-      metrics: [
-        {
-          label: "Ranking",
-          columnLetter: "F",
-          valueType: "rank",
-        },
-        {
-          label: "GP Per Labor Hour Actual",
-          columnLetter: "I",
-          valueType: "currency",
-        },
-        {
-          label: "PP Act %Tgt",
-          columnLetter: "O",
-          valueType: "percent",
-        },
-        {
-          label: "Rebiz Conv",
-          columnLetter: "S",
-          valueType: "percent",
-        },
-        {
-          label: "Acc GP Pct Actual",
-          columnLetter: "W",
-          valueType: "percent",
-        },
-        {
-          label: "CSAT Actual",
-          columnLetter: "Y",
-          valueType: "number",
-        },
-        {
-          label: "Visa Priority Rate",
-          columnLetter: "AC",
-          valueType: "percent",
-        },
-        {
-          label: "Indexed P360 Attach Rate",
-          columnLetter: "AG",
-          valueType: "percent",
-        },
-        {
-          label: "Premium Mix Rate",
-          columnLetter: "AM",
-          valueType: "percent",
-        },
-      ],
-    },
+    }),
+    district: createDistrictStyleModeConfig({
+      label: "District",
+      sheetCandidates: ["District", "Districts", "District Sheet", "District Data"],
+      districtColumnLetter: "A",
+      nameColumnLetter: "D",
+      nameHeader: "District",
+      itemLabelPlural: "districts",
+    }),
+    region: createDistrictStyleModeConfig({
+      label: "Region",
+      sheetCandidates: ["Region", "Regions", "Region Sheet", "Region Data"],
+      districtColumnLetter: "A",
+      nameColumnLetter: "D",
+      nameHeader: "Region",
+      itemLabelPlural: "regions",
+    }),
     employees: {
       label: "Employees",
       sheetCandidates: ["Employee", "Employee Sheet", "Employees", "Employee Data"],
@@ -123,6 +157,8 @@ const state = {
   workbook: null,
   dataByMode: {
     stores: [],
+    district: [],
+    region: [],
     employees: [],
   },
 };
