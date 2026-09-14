@@ -50,36 +50,46 @@ const DISTRICT_STYLE_METRICS = [
   },
 ];
 
-const DISTRICT_STYLE_MODE_BASE = {
-  districtColumnLetter: "A",
-  nameColumnLetter: "D",
-  metrics: DISTRICT_STYLE_METRICS,
-};
+function createDistrictStyleModeConfig({
+  label,
+  sheetCandidates,
+  nameHeader,
+  itemLabelPlural,
+  districtColumnLetter = "A",
+  nameColumnLetter = "D",
+}) {
+  return {
+    label,
+    sheetCandidates,
+    districtColumnLetter,
+    nameColumnLetter,
+    nameHeader,
+    itemLabelPlural,
+    metrics: DISTRICT_STYLE_METRICS,
+  };
+}
 
 const DASHBOARD_CONFIG = {
   defaultMode: "stores",
   modes: {
-    stores: {
-      ...DISTRICT_STYLE_MODE_BASE,
+    stores: createDistrictStyleModeConfig({
       label: "Stores",
       sheetCandidates: ["Store", "Store Sheet", "Store Data"],
       nameHeader: "Store Name",
       itemLabelPlural: "stores",
-    },
-    district: {
-      ...DISTRICT_STYLE_MODE_BASE,
+    }),
+    district: createDistrictStyleModeConfig({
       label: "District",
       sheetCandidates: ["District", "Districts", "District Sheet", "District Data"],
       nameHeader: "District",
       itemLabelPlural: "districts",
-    },
-    region: {
-      ...DISTRICT_STYLE_MODE_BASE,
+    }),
+    region: createDistrictStyleModeConfig({
       label: "Region",
       sheetCandidates: ["Region", "Regions", "Region Sheet", "Region Data"],
       nameHeader: "Region",
       itemLabelPlural: "regions",
-    },
+    }),
     employees: {
       label: "Employees",
       sheetCandidates: ["Employee", "Employee Sheet", "Employees", "Employee Data"],
