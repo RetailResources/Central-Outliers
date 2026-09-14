@@ -397,13 +397,16 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
   const viewMode = el.viewModeSelect.value;
 
   if (modeConfig.renderAsDistrictMode) {
+    const rankSortDirection = viewMode === "highest" ? 1 : -1;
     const rows = sourceRows
       .map((row) => {
-        const districtName = normalizeText(row.__districtName);
+        const rawDistrictName = getRowValueByColumnLetter(row.__rawRow, modeConfig.districtColumnLetter);
+        const districtName = normalizeText(rawDistrictName);
         const metricValue = row.__rawRow?.[columnLetterToIndex(metricGroup.valueColumnLetter)] ?? "";
         const rankValue = row.__rawRow?.[columnLetterToIndex(metricGroup.rankColumnLetter)] ?? "";
         return {
           districtName,
+          districtDisplayName: rawDistrictName === null || rawDistrictName === undefined ? "" : String(rawDistrictName).trim(),
           metricValue,
           rankValue,
           sortValue: parseNumeric(rankValue),
@@ -416,7 +419,7 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
         }
         if (a.sortValue === null) return 1;
         if (b.sortValue === null) return -1;
-        return viewMode === "highest" ? a.sortValue - b.sortValue : b.sortValue - a.sortValue;
+        return (a.sortValue - b.sortValue) * rankSortDirection;
       })
       .slice(0, 20);
 
@@ -448,7 +451,7 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
           .map(
             (row) => `
               <tr>
-                <td>${escapeHtml(row.districtName)}</td>
+                <td>${escapeHtml(row.districtDisplayName)}</td>
                 <td>${formatRawMetricValue(row.metricValue, metricGroup.valueType)}</td>
                 <td>${formatRawMetricValue(row.rankValue, "rank")}</td>
               </tr>
