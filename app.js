@@ -397,7 +397,6 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
   const viewMode = el.viewModeSelect.value;
 
   if (modeConfig.renderAsDistrictMode) {
-    const rankSortDirection = viewMode === "highest" ? 1 : -1;
     const rows = sourceRows
       .map((row) => {
         const rawDistrictName = getRowValueByColumnLetter(row.__rawRow, modeConfig.districtColumnLetter);
@@ -419,7 +418,10 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
         }
         if (a.sortValue === null) return 1;
         if (b.sortValue === null) return -1;
-        return (a.sortValue - b.sortValue) * rankSortDirection;
+        if (viewMode === "highest") {
+          return a.sortValue < b.sortValue ? -1 : 1;
+        }
+        return a.sortValue > b.sortValue ? -1 : 1;
       })
       .slice(0, 20);
 
