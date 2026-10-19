@@ -48,7 +48,7 @@ function createDistrictStyleModeConfig({ label, sheetCandidates, nameColumnLette
         valueType: "number",
       },
       {
-        label: "Visa Priority Rate",
+        label: "New BAN",
         columnLetter: "AB",
         rankColumnLetter: "AC",
         valueType: "percent",
@@ -112,7 +112,7 @@ const DASHBOARD_CONFIG = {
           valueType: "number",
         },
         {
-          label: "Visa Priority Rate",
+          label: "New BAN",
           columnLetter: "AC",
           valueType: "percent",
         },
@@ -169,7 +169,7 @@ const DASHBOARD_CONFIG = {
           valueType: "number",
         },
         {
-          label: "Visa Priority",
+          label: "New BAN",
           columnLetter: "AG",
           valueType: "percent",
         },
@@ -461,6 +461,12 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
   caption.className = "caption";
   caption.textContent = `${viewMode === "highest" ? "Top 20" : "Bottom 20"} ${modeConfig.itemLabelPlural}`;
 
+  const source = document.createElement("p");
+  source.className = "caption";
+  source.textContent = metricGroup.rankColumnLetter
+    ? `Source: column ${metricGroup.columnLetter} (value), column ${metricGroup.rankColumnLetter} (rank)`
+    : `Source: column ${metricGroup.columnLetter}`;
+
   const wrap = document.createElement("div");
   wrap.className = "table-wrap";
 
@@ -541,6 +547,7 @@ function renderMetricTable(metricGroup, modeConfig, sourceRows) {
   wrap.appendChild(table);
   card.appendChild(title);
   card.appendChild(caption);
+  card.appendChild(source);
   card.appendChild(wrap);
 
   return card;
