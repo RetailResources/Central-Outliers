@@ -50,19 +50,19 @@ function createDistrictStyleModeConfig({ label, sheetCandidates, nameColumnLette
       {
         label: "Visa Priority Rate",
         columnLetter: "AB",
-        rankColumnLetter: "AE",
+        rankColumnLetter: "AC",
         valueType: "percent",
       },
       {
         label: "Indexed P360 Attach Rate",
         columnLetter: "AF",
-        rankColumnLetter: "AI",
+        rankColumnLetter: "AG",
         valueType: "percent",
       },
       {
         label: "Premium Mix Rate",
         columnLetter: "AL",
-        rankColumnLetter: "AO",
+        rankColumnLetter: "AM",
         valueType: "percent",
       },
     ],
