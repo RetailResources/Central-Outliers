@@ -118,12 +118,12 @@ const DASHBOARD_CONFIG = {
         },
         {
           label: "Indexed P360 Attach Rate",
-          columnLetter: "AG",
+          columnLetter: "AE",
           valueType: "percent",
         },
         {
           label: "Premium Mix Rate",
-          columnLetter: "AM",
+          columnLetter: "AK",
           valueType: "percent",
         },
       ],
@@ -175,12 +175,12 @@ const DASHBOARD_CONFIG = {
         },
         {
           label: "P360 Attach",
-          columnLetter: "AK",
+          columnLetter: "AI",
           valueType: "percent",
         },
         {
           label: "Premium Mix",
-          columnLetter: "AQ",
+          columnLetter: "AO",
           valueType: "percent",
         },
       ],
