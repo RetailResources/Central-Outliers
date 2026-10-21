@@ -55,13 +55,13 @@ function createDistrictStyleModeConfig({ label, sheetCandidates, nameColumnLette
       },
       {
         label: "Indexed P360 Attach Rate",
-        columnLetter: "AF",
+        columnLetter: "AD",
         rankColumnLetter: "AG",
         valueType: "percent",
       },
       {
         label: "Premium Mix Rate",
-        columnLetter: "AL",
+        columnLetter: "AJ",
         rankColumnLetter: "AM",
         valueType: "percent",
       },
